@@ -20,6 +20,9 @@ public class MyBatisConfig {
     sessionFactory.setMapperLocations(
             new PathMatchingResourcePatternResolver().getResources("classpath:mapper/**/*.xml")
     );
+
+    sessionFactory.setTypeAliasesPackage("com.matdongsan.api.vo");
+
     return sessionFactory.getObject();
   }
 }
