@@ -3,8 +3,8 @@
 
 <mapper namespace="com.matdongsan.api.mapper.UserMapper">
 
-    <select id="findAll" resultType="com.matdongsan.api.vo.User">
-        SELECT id, name, email, age, created_at
+    <select id="findAll" resultType="user">
+        SELECT *
         FROM users
     </select>
 
