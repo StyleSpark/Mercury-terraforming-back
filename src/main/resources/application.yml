@@ -1,10 +1,16 @@
 spring:
+  config:
+    import: application-secret.yml
   datasource:
-    url: jdbc:postgresql://localhost:5432/postgres
-    username: postgres
-    password: 1234
+    url: ${secret.db.url}
+    username: ${secret.db.username}
+    password: ${secret.db.password}
     driver-class-name: org.postgresql.Driver
-
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 30000
+      max-lifetime: 600000
   mybatis:
     mapper-locations: classpath:mapper/**/*.xml
     type-aliases-package: com.matdongsan.api.vo
