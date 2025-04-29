@@ -13,6 +13,5 @@ spring:
       max-lifetime: 600000
   mybatis:
     mapper-locations: classpath:mapper/**/*.xml
-    type-aliases-package: com.matdongsan.api.vo
     configuration:
       map-underscore-to-camel-case: true
