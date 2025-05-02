@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 
 @Data
 @Alias("user")
-public class User {
+public class UserVO {
   private Long id;  // 추가
   private String name;
   private String email;
