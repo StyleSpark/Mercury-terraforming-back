@@ -3,7 +3,7 @@
 
 <mapper namespace="com.matdongsan.api.mapper.NoticeMapper">
 
-    <select id="selectNotices" parameterType="com.matdongsan.api.dto.notice.NoticeRequest" resultType="com.matdongsan.api.dto.notice.NoticeGetRequest">
+    <select id="selectNotices" parameterType="com.matdongsan.api.dto.notice.NoticeGetRequest"  resultType="com.matdongsan.api.vo.NoticeVO">
           SELECT id
                 ,title
                 ,created_at
@@ -16,7 +16,7 @@
         ORDER BY created_at DESC
     </select>
 
-    <select id="selectNoticeDetail" parameterType="long" resultType="com.matdongsan.api.dto.notice.NoticeGetRequest">
+    <select id="selectNoticeDetail" parameterType="java.lang.Long"  resultType="com.matdongsan.api.vo.NoticeVO">
         SELECT id
               ,title
               ,content

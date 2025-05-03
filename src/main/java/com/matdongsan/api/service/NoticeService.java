@@ -8,10 +8,12 @@ import com.matdongsan.api.mapper.NoticeMapper;
 import com.matdongsan.api.vo.NoticeVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class NoticeService {
 
@@ -41,8 +43,7 @@ public class NoticeService {
    * @return 생성된 공지사항 id
    */
   public Long createNotice(NoticeCreateRequest request) {
-    mapper.insertNotice(request);
-    return request.getId();
+    return mapper.insertNotice(request);
   }
 
   /**

@@ -1,11 +1,11 @@
 package com.matdongsan.api.mapper;
 
-import com.matdongsan.api.vo.User;
+import com.matdongsan.api.vo.UserVO;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
 
 @Mapper
 public interface UserMapper {
-  List<User> findAll();
+  List<UserVO> findAll();
 }

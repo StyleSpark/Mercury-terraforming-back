@@ -16,9 +16,9 @@ public interface NoticeMapper {
 
   NoticeVO selectNoticeDetail(@Param("id") Long id);
 
-  Long insertNotice(@Param("request") NoticeCreateRequest request);
+  Long insertNotice(NoticeCreateRequest request);
 
-  int updateNotice(NoticeUpdateRequest request);
+  int updateNotice(@Param("request") NoticeUpdateRequest request);
 
-  int softDeleteNotice(NoticeDeleteRequest request);
+  int softDeleteNotice(@Param("request") NoticeDeleteRequest request);
 }
