@@ -51,7 +51,7 @@ public class NoticeController {
   public ResponseEntity<?> deleteNotice(@PathVariable Long id) {
     NoticeDeleteRequest request = new NoticeDeleteRequest();
     request.setId(id);
-    String admin = "This is temp admin data";
+    String admin = "admin";
     request.setAdmin(admin);
 
     boolean result = service.deleteNotice(request);
@@ -69,10 +69,10 @@ public class NoticeController {
    */
   @PostMapping
   public ResponseEntity<?> createNotice(@RequestBody NoticeCreateRequest request) {
-    String admin = "This is temp admin data"; // 현재 로그인 한 유저 정보
+    String admin = "admin"; // 현재 로그인 한 유저 정보
     // 관리자가 맞는지 확인후에 setter 적용
     // 그리고 service 실행 아니라면 fail - 요청 권한 부족과 같은 메시지 출력
-    request.setAdmin(admin);
+    request.setAuthor(admin);
     Long id = service.createNotice(request);
     return ResponseEntity
             .status(HttpStatus.CREATED)
