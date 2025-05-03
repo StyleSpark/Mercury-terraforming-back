@@ -45,11 +45,11 @@ public class NoticeController {
   /**
    * 공지사항 삭제
    * @param id 해당 공지사항 id
-   * @param request 공지사항 데이터
    * @return 삭제 결과
    */
   @DeleteMapping("/{id}")
-  public ResponseEntity<?> deleteNotice(@PathVariable Long id, @RequestBody NoticeDeleteRequest request) {
+  public ResponseEntity<?> deleteNotice(@PathVariable Long id) {
+    NoticeDeleteRequest request = new NoticeDeleteRequest();
     request.setId(id);
     String admin = "This is temp admin data";
     request.setAdmin(admin);

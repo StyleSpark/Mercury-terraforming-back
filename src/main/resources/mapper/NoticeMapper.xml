@@ -3,10 +3,10 @@
 
 <mapper namespace="com.matdongsan.api.mapper.NoticeMapper">
 
-    <select id="selectNotices" parameterType="com.matdongsan.api.dto.notice.NoticeGetRequest"  resultType="com.matdongsan.api.vo.NoticeVO">
+    <select id="selectNotices" parameterType="com.matdongsan.api.dto.notice.NoticeGetRequest"  resultType="notice">
           SELECT id
                 ,title
-                ,created_at
+                ,created_at AS createdAt
                 ,content
             FROM notices
            WHERE 1=1
@@ -16,18 +16,18 @@
         ORDER BY created_at DESC
     </select>
 
-    <select id="selectNoticeDetail" parameterType="java.lang.Long"  resultType="com.matdongsan.api.vo.NoticeVO">
+    <select id="selectNoticeDetail" parameterType="java.lang.Long"  resultType="notice">
         SELECT id
               ,title
               ,content
-              ,created_at
+              ,created_at AS createdAt
           FROM notices
          WHERE id = #{id}
     </select>
 
     <insert id="insertNotice" useGeneratedKeys="true" keyProperty="id" parameterType="com.matdongsan.api.dto.notice.NoticeCreateRequest">
-        INSERT INTO notices (title, content, created_at)
-        VALUES (#{title}, #{content}, NOW())
+        INSERT INTO notices (title, content)
+        VALUES (#{title}, #{content})
     </insert>
 
     <update id="updateNotice" parameterType="com.matdongsan.api.dto.notice.NoticeUpdateRequest">
