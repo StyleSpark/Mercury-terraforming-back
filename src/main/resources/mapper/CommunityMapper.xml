@@ -39,4 +39,16 @@
         VALUES (#{userId}, #{categoryId}, #{propertyId}, #{title}, #{content}, string_to_array(#{imageUrls}, ','))
     </insert>
 
+    <update id="updateCommunity" parameterType="map">
+        UPDATE communities
+           SET user_id = #{request.userId}
+               ,category_id = #{request.categoryId}
+               ,property_id = #{request.propertyId}
+               ,title = #{request.title}
+               ,content = #{request.content}
+               ,image_urls = string_to_array(#{request.imageUrls}, ',')
+               ,updated_at = NOW()
+         WHERE id = #{id}
+    </update>
+
 </mapper>

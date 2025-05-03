@@ -3,6 +3,7 @@ package com.matdongsan.api.controller;
 import com.matdongsan.api.dto.ApiResponse;
 import com.matdongsan.api.dto.community.CommunityCreateRequest;
 import com.matdongsan.api.dto.community.CommunityGetRequest;
+import com.matdongsan.api.dto.community.CommunityUpdateRequest;
 import com.matdongsan.api.service.CommunityService;
 import com.matdongsan.api.vo.CommunityVO;
 import lombok.RequiredArgsConstructor;
@@ -46,7 +47,7 @@ public class CommnunityController {
   }
 
   /**
-   * 커뮤니티 등록 (관리 자동)
+   * 커뮤니티 등록
    * @param request 등록할 커뮤니티 데이터
    * @return 등록 결과
    */
@@ -58,5 +59,17 @@ public class CommnunityController {
     return ResponseEntity
             .status(HttpStatus.CREATED)
             .body(ApiResponse.success(201, id));
+  }
+
+  /**
+   * 커뮤니티 수정
+   * @param id 해당 커뮤니티 id
+   * @param request 커뮤니티 데이터
+   * @return 수정 결과
+   */
+  @PatchMapping("/{id}")
+  public ResponseEntity<?> updateCommunity(@PathVariable Long id, @RequestBody CommunityUpdateRequest request) {
+    service.updateCommunity(id, request);
+    return ResponseEntity.ok(ApiResponse.success("커뮤니티 글이 수정되었습니다."));
   }
 }

@@ -2,6 +2,7 @@ package com.matdongsan.api.service;
 
 import com.matdongsan.api.dto.community.CommunityCreateRequest;
 import com.matdongsan.api.dto.community.CommunityGetRequest;
+import com.matdongsan.api.dto.community.CommunityUpdateRequest;
 import com.matdongsan.api.mapper.CommunityMapper;
 import com.matdongsan.api.vo.CommunityVO;
 import lombok.RequiredArgsConstructor;
@@ -41,5 +42,14 @@ public class CommunityService {
    */
   public Long createCommunity(CommunityCreateRequest request) {
     return mapper.insertCommunity(request);
+  }
+
+  /**
+   * 커뮤니티 글 수정
+   * @param id 해당 커뮤니티 id
+   * @param request 커뮤니티 수정 데이터
+   */
+  public void updateCommunity(Long id, CommunityUpdateRequest request) {
+    mapper.updateCommunity(id, request);
   }
 }
