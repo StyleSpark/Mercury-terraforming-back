@@ -7,5 +7,7 @@ import lombok.Setter;
 @Setter
 public class NoticeCreateRequest {
   private Long id;
+  private String title;
+  private String content;
   private String admin;
 }
