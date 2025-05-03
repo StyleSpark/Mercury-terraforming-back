@@ -34,4 +34,9 @@
       ORDER BY created_at DESC
     </select>
 
+    <insert id="insertCommunity" useGeneratedKeys="true" keyProperty="id" parameterType="com.matdongsan.api.dto.community.CommunityCreateRequest">
+        INSERT INTO communities (user_id, category_id, property_id, title, content, image_urls)
+        VALUES (#{userId}, #{categoryId}, #{propertyId}, #{title}, #{content}, string_to_array(#{imageUrls}, ','))
+    </insert>
+
 </mapper>

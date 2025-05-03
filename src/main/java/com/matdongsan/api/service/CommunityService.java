@@ -1,5 +1,6 @@
 package com.matdongsan.api.service;
 
+import com.matdongsan.api.dto.community.CommunityCreateRequest;
 import com.matdongsan.api.dto.community.CommunityGetRequest;
 import com.matdongsan.api.mapper.CommunityMapper;
 import com.matdongsan.api.vo.CommunityVO;
@@ -31,5 +32,14 @@ public class CommunityService {
    */
   public List<CommunityVO> getCommunityList(CommunityGetRequest request) {
     return mapper.selectCommunities(request);
+  }
+
+  /**
+   * 커뮤니티 글 생성
+   * @param request 커뮤니티 등록 데이터
+   * @return 생성된 커뮤니티 id
+   */
+  public Long createCommunity(CommunityCreateRequest request) {
+    return mapper.insertCommunity(request);
   }
 }

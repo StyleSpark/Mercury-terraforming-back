@@ -1,6 +1,5 @@
 package com.matdongsan.api.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -25,6 +24,14 @@ public class ApiResponse<T> {
 
   public static <T> ApiResponse<T> fail(String message) {
     return new ApiResponse<>(400, message, null);
+  }
+
+  public static <T> ApiResponse<T> success(int status, T data) {
+    return new ApiResponse<>(status, "Success", data);
+  }
+
+  public static <T> ApiResponse<T> success(int status, String message, T data) {
+    return new ApiResponse<>(status, message, data);
   }
 }
 

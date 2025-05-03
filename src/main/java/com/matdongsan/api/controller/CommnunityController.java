@@ -1,15 +1,14 @@
 package com.matdongsan.api.controller;
 
 import com.matdongsan.api.dto.ApiResponse;
+import com.matdongsan.api.dto.community.CommunityCreateRequest;
 import com.matdongsan.api.dto.community.CommunityGetRequest;
 import com.matdongsan.api.service.CommunityService;
 import com.matdongsan.api.vo.CommunityVO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -46,4 +45,18 @@ public class CommnunityController {
     return ResponseEntity.ok(ApiResponse.success(communities));
   }
 
+  /**
+   * 커뮤니티 등록 (관리 자동)
+   * @param request 등록할 커뮤니티 데이터
+   * @return 등록 결과
+   */
+  @PostMapping
+  public ResponseEntity<?> createCommunity(@RequestBody CommunityCreateRequest request) {
+    // TODO: 사용자 정보 구현 -> 요청 JSON 수정 필요 (임시)
+    // TODO: 카테고리 등록 구현 -> '자취 후기', '매물 후기', '꿀팁 공유', '질문 있어요'
+    Long id = service.createCommunity(request);
+    return ResponseEntity
+            .status(HttpStatus.CREATED)
+            .body(ApiResponse.success(201, id));
+  }
 }

@@ -1,5 +1,6 @@
 package com.matdongsan.api.mapper;
 
+import com.matdongsan.api.dto.community.CommunityCreateRequest;
 import com.matdongsan.api.dto.community.CommunityGetRequest;
 import com.matdongsan.api.vo.CommunityVO;
 import org.apache.ibatis.annotations.Mapper;
@@ -12,4 +13,6 @@ public interface CommunityMapper {
     CommunityVO selectCommunityDetail(Long id);
 
     List<CommunityVO> selectCommunities(CommunityGetRequest request);
+
+    Long insertCommunity(CommunityCreateRequest request);
 }
