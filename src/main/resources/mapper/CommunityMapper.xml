@@ -16,4 +16,22 @@
          WHERE id = #{id}
     </select>
 
+    <select id="selectCommunities" parameterType="com.matdongsan.api.dto.community.CommunityGetRequest" resultType="community">
+        SELECT id AS id
+               ,user_id AS userId
+               ,category_id AS categoryId
+               ,title AS title
+               ,content AS content
+               ,image_urls AS imageUrls
+               ,view_count AS viewCount
+               ,created_at AS createdAt
+          FROM communities
+         WHERE 1=1
+        <if test="title != null and title != ''">
+           AND title LIKE CONCAT('%', #{title}, '%')
+        </if>
+           AND deleted_at IS NULL
+      ORDER BY created_at DESC
+    </select>
+
 </mapper>
