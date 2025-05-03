@@ -1,6 +1,7 @@
 package com.matdongsan.api.service;
 
 import com.matdongsan.api.dto.community.CommunityCreateRequest;
+import com.matdongsan.api.dto.community.CommunityDeleteRequest;
 import com.matdongsan.api.dto.community.CommunityGetRequest;
 import com.matdongsan.api.dto.community.CommunityUpdateRequest;
 import com.matdongsan.api.mapper.CommunityMapper;
@@ -51,5 +52,14 @@ public class CommunityService {
    */
   public void updateCommunity(Long id, CommunityUpdateRequest request) {
     mapper.updateCommunity(id, request);
+  }
+
+  /**
+   * 커뮤니티 글 삭제
+   * @param id 해당 커뮤니티 id
+   * @param request 사용자 정보 데이터
+   */
+  public void deleteCommunity(Long id, CommunityDeleteRequest request) {
+    mapper.deleteCommunity(id, request);
   }
 }

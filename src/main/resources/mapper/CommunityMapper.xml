@@ -51,4 +51,12 @@
          WHERE id = #{id}
     </update>
 
+    <update id="deleteCommunity" parameterType="map">
+        UPDATE communities
+           SET deleted_at = NOW()
+         WHERE id = #{id}
+           AND user_id = #{request.userId}
+           AND deleted_at IS NULL
+    </update>
+
 </mapper>

@@ -2,6 +2,7 @@ package com.matdongsan.api.controller;
 
 import com.matdongsan.api.dto.ApiResponse;
 import com.matdongsan.api.dto.community.CommunityCreateRequest;
+import com.matdongsan.api.dto.community.CommunityDeleteRequest;
 import com.matdongsan.api.dto.community.CommunityGetRequest;
 import com.matdongsan.api.dto.community.CommunityUpdateRequest;
 import com.matdongsan.api.service.CommunityService;
@@ -19,10 +20,6 @@ import java.util.List;
 public class CommnunityController {
 
   private final CommunityService service;
-
-  // 커뮤니티 글 등록
-
-  // 커뮤니티 글 수정
 
   /**
    * 커뮤니티 단일 조회
@@ -71,5 +68,17 @@ public class CommnunityController {
   public ResponseEntity<?> updateCommunity(@PathVariable Long id, @RequestBody CommunityUpdateRequest request) {
     service.updateCommunity(id, request);
     return ResponseEntity.ok(ApiResponse.success("커뮤니티 글이 수정되었습니다."));
+  }
+
+  /**
+   * 커뮤니티 삭제
+   * @param id 해당 커뮤니티 id
+   * @param request 사용자 정보 데이터
+   * @return 삭제 결과
+   */
+  @DeleteMapping("/{id}")
+  public ResponseEntity<?> deleteCommunity(@PathVariable Long id, @RequestBody CommunityDeleteRequest request) {
+    service.deleteCommunity(id, request);
+    return ResponseEntity.ok(ApiResponse.success("커뮤니티 글이 삭제되었습니다."));
   }
 }
