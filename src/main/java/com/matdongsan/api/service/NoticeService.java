@@ -13,8 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
+@Transactional(rollbackFor = Exception.class)
 public class NoticeService {
 
   private final NoticeMapper mapper;
@@ -24,6 +24,7 @@ public class NoticeService {
    * @param request 공지사항 검색 조건
    * @return 공지사항 목록
    */
+  @Transactional(readOnly = true)
   public List<NoticeVO> getNoticeList(NoticeGetRequest request) {
     return mapper.selectNotices(request);
   }
@@ -33,6 +34,7 @@ public class NoticeService {
    * @param id 공지사항 id
    * @return 공지사항 상세 데이터
    */
+  @Transactional(readOnly = true)
   public NoticeVO getNoticeDetail(Long id) {
     return mapper.selectNoticeDetail(id);
   }
