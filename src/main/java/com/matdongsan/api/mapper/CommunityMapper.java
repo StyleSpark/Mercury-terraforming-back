@@ -6,5 +6,5 @@ import org.apache.ibatis.annotations.Param;
 
 @Mapper
 public interface CommunityMapper {
-    CommunityVO getCommunityById(@Param("id") Long id);
+    CommunityVO selectCommunityDetail(Long id);
 }

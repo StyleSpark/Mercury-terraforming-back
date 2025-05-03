@@ -3,18 +3,17 @@
 
 <mapper namespace="com.matdongsan.api.mapper.CommunityMapper">
 
-    <select id="getCommunityById" parameterType="long" resultType="community">
-        SELECT
-         id AS id
-        ,user_id AS userId
-        ,category_id AS categoryId
-        ,title AS title
-        ,content AS content
-        ,image_urls AS imageUrls
-        ,view_count AS viewCount
-        ,created_at AS createdAt
-        FROM communities
-        WHERE id = #{id}
+    <select id="selectCommunityDetail" parameterType="java.lang.Long" resultType="community">
+        SELECT id AS id
+               ,user_id AS userId
+               ,category_id AS categoryId
+               ,title AS title
+               ,content AS content
+               ,image_urls AS imageUrls
+               ,view_count AS viewCount
+               ,created_at AS createdAt
+          FROM communities
+         WHERE id = #{id}
     </select>
 
 </mapper>

@@ -27,12 +27,12 @@ public class CommnunityController {
 
   /**
    * 커뮤니티 단일 조회
-   * @param request 특정 커뮤니티 검색 매개변수
-   * @return 커뮤니티 단건
+   * @param id 커뮤니티 id
+   * @return 커뮤니티 상세 정보
    */
   @GetMapping("/{id}")
-  public ResponseEntity<?> getCommunityById(@PathVariable("id") Long id) {
-    CommunityVO community = service.getCommunityById(id);
+  public ResponseEntity<?> getCommunityDetail(@PathVariable Long id) {
+    CommunityVO community = service.getCommunityDetail(id);
     return ResponseEntity.ok(ApiResponse.success(community));
   }
 

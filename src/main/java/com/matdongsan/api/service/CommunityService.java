@@ -11,8 +11,14 @@ public class CommunityService {
 
   private final CommunityMapper mapper;
 
-  public CommunityVO getCommunityById(Long id) {
-    return mapper.getCommunityById(id);
+  /**
+   * 커뮤니티 상세 조회
+   * @param id 커뮤니티 id
+   * @return 커뮤니티 상세 데이터
+   */
+
+  public CommunityVO getCommunityDetail(Long id) {
+    return mapper.selectCommunityDetail(id);
   }
 
 }
