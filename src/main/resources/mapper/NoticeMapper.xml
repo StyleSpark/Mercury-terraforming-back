@@ -3,6 +3,16 @@
 
 <mapper namespace="com.matdongsan.api.mapper.NoticeMapper">
 
+    <select id="countNotices" parameterType="com.matdongsan.api.dto.notice.NoticeGetRequest" resultType="int">
+        SELECT COUNT(*)
+          FROM notices
+         WHERE 1=1
+        <if test="title != null and title != ''">
+            AND title LIKE CONCAT('%', #{title}, '%')
+        </if>
+          AND deleted = false
+    </select>
+
     <select id="selectNotices" parameterType="com.matdongsan.api.dto.notice.NoticeGetRequest"  resultType="notice">
           SELECT id
                 ,title
@@ -15,6 +25,8 @@
          </if>
              AND deleted = false
         ORDER BY created_at DESC
+           LIMIT #{size}
+          OFFSET #{offset}
     </select>
 
     <select id="selectNoticeDetail" parameterType="java.lang.Long"  resultType="notice">

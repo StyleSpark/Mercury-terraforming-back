@@ -12,7 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/notices")
@@ -95,15 +95,14 @@ public class NoticeController {
   // 공지사항 조회
 
   /**
-   * 공지사항 조희
-   *
-   * @param request 특정 공지사항 검색 매개변수
-   * @return 공지사항 리스트
+   * 공지사항 조회
+   * @param request
+   * @return
    */
   @GetMapping
   public ResponseEntity<?> getNotices(NoticeGetRequest request) {
-    List<NoticeVO> notices = service.getNoticeList(request);
-    return ResponseEntity.ok(ApiResponse.success(notices));
+    Map<String, Object> response = service.getNoticeListWithPagination(request);
+    return ResponseEntity.ok(ApiResponse.success(response));
   }
 
 }

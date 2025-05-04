@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -25,8 +26,15 @@ public class NoticeService {
    * @return 공지사항 목록
    */
   @Transactional(readOnly = true)
-  public List<NoticeVO> getNoticeList(NoticeGetRequest request) {
-    return mapper.selectNotices(request);
+  public Map<String, Object> getNoticeListWithPagination(NoticeGetRequest request) {
+    List<NoticeVO> notices = mapper.selectNotices(request);
+    int total = mapper.countNotices(request);
+    return Map.of(
+            "notices", notices,
+            "total", total,
+            "page", request.getPage(),
+            "size", request.getSize()
+    );
   }
 
   /**

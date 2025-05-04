@@ -20,4 +20,6 @@ public interface NoticeMapper {
   int updateNotice(NoticeUpdateRequest request);
 
   int softDeleteNotice(NoticeDeleteRequest request);
+
+  int countNotices(NoticeGetRequest request);
 }
