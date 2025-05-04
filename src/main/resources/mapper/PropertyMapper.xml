@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.matdongsan.api.mapper.PropertyMapper">
+
+    <insert id="insertProperty" useGeneratedKeys="true" keyProperty="id"
+            parameterType="com.matdongsan.api.dto.property.PropertyCreateRequest">
+        INSERT INTO properties (
+        user_id,
+        title,
+        category,
+        price,
+        deposit,
+        rental_fee,
+        floor_type,
+        floor,
+        room_size,
+        maintenance_fee,
+        thumbnail_url,
+        status,
+        address,
+        address_detail,
+        postcode,
+        latitude,
+        longitude,
+        hit_count,
+        property_type_id
+        )
+        VALUES (
+        #{userId},
+        #{title},
+        #{category},
+        #{price},
+        #{deposit},
+        #{rentalFee},
+        #{floorType},
+        #{floor},
+        #{roomSize},
+        #{maintenanceFee},
+        #{thumbnailUrl},
+        #{status},
+        #{address},
+        #{addressDetail},
+        #{postcode},
+        #{latitude},
+        #{longitude},
+        #{hitCount},
+        #{propertyTypeId}
+        )
+    </insert>
+
+    <select id="selectProperties" parameterType="com.matdongsan.api.dto.property.PropertyGetRequest"
+            resultType="com.matdongsan.api.vo.PropertyVO">
+        SELECT user_id AS userId
+              ,title
+              ,category
+              ,price
+              ,deposit
+              ,rental_fee AS rentalFee
+              ,floor_type AS floorType
+              ,floor
+              ,room_size AS roomSize
+              ,maintenance_fee AS maintenanceFee
+              ,thumbnail_url AS thumbnailUrl
+              ,status
+              ,address
+              ,address_detail AS addressDetail
+              ,postcode
+              ,latitude
+              ,longitude
+              ,hit_count AS hitCount
+              ,property_type_id AS propertyTypeId
+        FROM properties
+    </select>
+</mapper>
