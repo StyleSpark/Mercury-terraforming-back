@@ -50,14 +50,24 @@ public class PropertyController {
     return ResponseEntity.ok(ApiResponse.success(properties));
   }
 
-  //매물 상세 조회
+  /**
+   * 매물 상세 조회
+   * @param id
+   * @return
+   */
   @GetMapping("/{id}")
   public ResponseEntity<?> getPropertyDetail(@PathVariable Long id) {
     PropertyVO property = service.getPropertyDetail(id);
     return ResponseEntity.ok(ApiResponse.success(property));
   }
 
-  //매물 수정
+  /**
+   *  매물 수정
+   * @param request
+   * @param images
+   * @param thumbnail
+   * @return
+   */
   @PatchMapping("/{id}")
   public ResponseEntity<?> updateProperty(@RequestPart("request") PropertyUpdateRequest request,
                                           @RequestPart(value = "images", required = false) List<MultipartFile> images,
@@ -66,7 +76,11 @@ public class PropertyController {
     return ResponseEntity.ok(ApiResponse.success(property));
   }
 
-  //매물 삭제
+  /**
+   * 매물 삭제 (소프트)
+   * @param id
+   * @return
+   */
   @DeleteMapping("/{id}")
   public ResponseEntity<?> deleteProperty(@PathVariable Long id) {
     PropertyDeleteRequest request = new PropertyDeleteRequest();
