@@ -1,14 +1,15 @@
-package com.matdongsan.api.vo;
+package com.matdongsan.api.dto.property;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.util.List;
 
 @Getter
 @Setter
-public class PropertyVO {
+public class PropertyUpdateRequest {
   private Long id;
   private Long userId;
   private String title;
@@ -30,6 +31,11 @@ public class PropertyVO {
   private Long hitCount;
   private Integer propertyTypeId;
 
+  private MultipartFile thumbnail;
+
+  //detail
+  private PropertyDetailRequest detail;
+
+  private List<MultipartFile> images;
   private List<String> imageUrls;
-  private PropertyDetailVO detail;
 }

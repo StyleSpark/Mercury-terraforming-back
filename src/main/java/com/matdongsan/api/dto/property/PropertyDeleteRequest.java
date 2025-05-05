@@ -5,8 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class PropertyGetRequest {
-  private String search;
-  private int size;
-  private int page;
+public class PropertyDeleteRequest {
+  private Long id;
+  private Long userId;
 }

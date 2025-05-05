@@ -51,25 +51,87 @@
 
     <select id="selectProperties" parameterType="com.matdongsan.api.dto.property.PropertyGetRequest"
             resultType="com.matdongsan.api.vo.PropertyVO">
-        SELECT user_id AS userId
+        SELECT user_id
               ,title
               ,category
               ,price
               ,deposit
-              ,rental_fee AS rentalFee
-              ,floor_type AS floorType
+              ,rental_fee
+              ,floor_type
               ,floor
-              ,room_size AS roomSize
-              ,maintenance_fee AS maintenanceFee
-              ,thumbnail_url AS thumbnailUrl
+              ,room_size
+              ,maintenance_fee
+              ,thumbnail_url
               ,status
               ,address
-              ,address_detail AS addressDetail
+              ,address_detail
               ,postcode
               ,latitude
               ,longitude
-              ,hit_count AS hitCount
-              ,property_type_id AS propertyTypeId
+              ,hit_count
+              ,property_type_id
         FROM properties
+        WHERE deleted_at IS null
     </select>
+
+    <select id="selectPropertyById" parameterType="java.lang.Long" resultType="com.matdongsan.api.vo.PropertyVO">
+        SELECT id
+            ,user_id
+            ,title
+            ,category
+            ,price
+            ,deposit
+            ,rental_fee
+            ,floor_type
+            ,floor
+            ,room_size
+            ,maintenance_fee
+            ,thumbnail_url
+            ,status
+            ,address
+            ,address_detail
+            ,postcode
+            ,latitude
+            ,longitude
+            ,hit_count
+            ,property_type_id
+        FROM properties
+        WHERE id = #{id}
+          AND deleted_at IS null
+    </select>
+
+    <update id="softDeleteProperty" parameterType="com.matdongsan.api.dto.property.PropertyDeleteRequest">
+        UPDATE properties
+           SET deleted_at = NOW(),
+         WHERE property_id = #{id}
+           AND deleted_at IS NOT null
+           AND user_id = #{userId}
+    </update>
+
+    <update id="updateProperty" parameterType="com.matdongsan.api.dto.property.PropertyUpdateRequest">
+        UPDATE properties
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="title != null">title = #{title},</if>
+            <if test="category != null">category = #{category},</if>
+            <if test="price != null">price = #{price},</if>
+            <if test="deposit != null">deposit = #{deposit},</if>
+            <if test="rentalFee != null">rental_fee = #{rentalFee},</if>
+            <if test="floorType != null">floor_type = #{floorType},</if>
+            <if test="floor != null">floor = #{floor},</if>
+            <if test="roomSize != null">room_size = #{roomSize},</if>
+            <if test="maintenanceFee != null">maintenance_fee = #{maintenanceFee},</if>
+            <if test="thumbnailUrl != null">thumbnail_url = #{thumbnailUrl},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="address != null">address = #{address},</if>
+            <if test="addressDetail != null">address_detail = #{addressDetail},</if>
+            <if test="postcode != null">postcode = #{postcode},</if>
+            <if test="latitude != null">latitude = #{latitude},</if>
+            <if test="longitude != null">longitude = #{longitude},</if>
+            <if test="hitCount != null">hit_count = #{hitCount},</if>
+            <if test="propertyTypeId != null">property_type_id = #{propertyTypeId}</if>
+        </trim>
+        WHERE id = #{id}
+        AND deleted_at IS NULL
+    </update>
+
 </mapper>
