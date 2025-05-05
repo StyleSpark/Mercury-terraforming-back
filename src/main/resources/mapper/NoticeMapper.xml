@@ -16,7 +16,7 @@
     <select id="selectNotices" parameterType="com.matdongsan.api.dto.notice.NoticeGetRequest"  resultType="notice">
           SELECT id
                 ,title
-                ,created_at AS createdAt
+                ,created_at
                 ,content
             FROM notices
            WHERE 1=1
@@ -33,7 +33,7 @@
         SELECT id
               ,title
               ,content
-              ,created_at AS createdAt
+              ,created_at
           FROM notices
          WHERE id = #{id}
            AND deleted = false
@@ -46,18 +46,20 @@
 
     <update id="updateNotice" parameterType="com.matdongsan.api.dto.notice.NoticeUpdateRequest">
         UPDATE notices
-        SET title = #{title},
-        content = #{content},
-        updated_at = NOW(),
-        updated_by = #{admin}
-        WHERE id = #{id} AND deleted = false
+           SET title = #{title},
+               content = #{content},
+               updated_at = NOW(),
+               updated_by = #{admin}
+         WHERE id = #{id}
+           AND deleted = false
     </update>
 
     <update id="softDeleteNotice" parameterType="com.matdongsan.api.dto.notice.NoticeDeleteRequest">
         UPDATE notices
-        SET deleted = true,
-        deleted_at = NOW(),
-        deleted_by = #{admin}
-        WHERE id = #{id} AND deleted = false
+           SET deleted = true,
+               deleted_at = NOW(),
+               deleted_by = #{admin}
+         WHERE id = #{id}
+           AND deleted = false
     </update>
 </mapper>
