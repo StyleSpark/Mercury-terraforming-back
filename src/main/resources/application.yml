@@ -7,8 +7,8 @@ spring:
     password: ${secret.db.password}
     driver-class-name: org.postgresql.Driver
     hikari:
-      maximum-pool-size: 10
-      minimum-idle: 5
+      maximum-pool-size: 5
+      minimum-idle: 3
       idle-timeout: 30000
       max-lifetime: 600000
   mybatis:

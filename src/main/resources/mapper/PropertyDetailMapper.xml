@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.matdongsan.api.mapper.PropertyDetailMapper">
+
+    <insert id="insertPropertyDetail"
+            useGeneratedKeys="true"
+            keyProperty="id"
+            parameterType="com.matdongsan.api.dto.property.PropertyDetailRequest">
+        INSERT INTO property_details (
+        property_id,
+        content,
+        available_date,
+        bath,
+        has_lift,
+        bed,
+        lot,
+        heating,
+        cooling,
+        microwave,
+        burner,
+        fridge,
+        shoe_closet,
+        tv,
+        closet,
+        dining_table,
+        table_item,
+        washer,
+        induction,
+        created_at
+        )
+        VALUES (
+        #{propertyId},
+        #{content},
+        #{availableDate},
+        #{bath},
+        #{hasLift},
+        #{bed},
+        #{lot},
+        #{heating},
+        #{cooling},
+        #{microwave},
+        #{burner},
+        #{fridge},
+        #{shoeCloset},
+        #{tv},
+        #{closet},
+        #{diningTable},
+        #{tableItem},
+        #{washer},
+        #{induction},
+        #{createdAt}
+        )
+    </insert>
+
+    <select id="selectPropertyDetailByPropertyId" parameterType="java.lang.Long" resultType="com.matdongsan.api.vo.PropertyDetailVO">
+        SELECT  id,
+        content,
+        available_date,
+        bath,
+        has_lift,
+        bed,
+        lot,
+        heating,
+        cooling,
+        microwave,
+        burner,
+        fridge,
+        shoe_closet,
+        tv,
+        closet,
+        dining_table,
+        table_item,
+        washer,
+        induction,
+        created_at
+        FROM property_details
+        WHERE property_id = #{id}
+        AND deleted_at IS null
+    </select>
+
+    <update id="softDeletePropertyDetail" parameterType="com.matdongsan.api.dto.property.PropertyDeleteRequest">
+        UPDATE property_details
+        SET deleted_at = NOW()
+        WHERE property_id = #{id} AND deleted_at IS NULL
+    </update>
+
+    <update id="updatePropertyDetail" parameterType="com.matdongsan.api.dto.property.PropertyUpdateRequest">
+        UPDATE property_details
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="content != null">content = #{content},</if>
+            <if test="availableDate != null">available_date = #{availableDate},</if>
+            <if test="bath != null">bath = #{bath},</if>
+            <if test="hasLift != null">has_lift = #{hasLift},</if>
+            <if test="bed != null">bed = #{bed},</if>
+            <if test="lot != null">lot = #{lot},</if>
+            <if test="heating != null">heating = #{heating},</if>
+            <if test="cooling != null">cooling = #{cooling},</if>
+            <if test="microwave != null">microwave = #{microwave},</if>
+            <if test="burner != null">burner = #{burner},</if>
+            <if test="fridge != null">fridge = #{fridge},</if>
+            <if test="shoeCloset != null">shoe_closet = #{shoeCloset},</if>
+            <if test="tv != null">tv = #{tv},</if>
+            <if test="closet != null">closet = #{closet},</if>
+            <if test="diningTable != null">dining_table = #{diningTable},</if>
+            <if test="tableItem != null">table_item = #{tableItem},</if>
+            <if test="washer != null">washer = #{washer},</if>
+            <if test="induction != null">induction = #{induction}</if>
+        </trim>
+        WHERE property_id = #{propertyId}
+        AND deleted_at IS NULL
+    </update>
+
+</mapper>

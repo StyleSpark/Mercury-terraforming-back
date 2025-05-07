@@ -3,13 +3,63 @@
 
 <mapper namespace="com.matdongsan.api.mapper.NoticeMapper">
 
-    <select id="findAll" parameterType="com.matdongsan.api.dto.notice.NoticeRequest" resultType="notice">
+    <select id="countNotices" parameterType="com.matdongsan.api.dto.notice.NoticeGetRequest" resultType="int">
+        SELECT COUNT(*)
+          FROM notices
+         WHERE 1=1
+        <if test="title != null and title != ''">
+            AND title LIKE CONCAT('%', #{title}, '%')
+        </if>
+          AND deleted = false
+    </select>
+
+    <select id="selectNotices" parameterType="com.matdongsan.api.dto.notice.NoticeGetRequest"  resultType="notice">
           SELECT id
                 ,title
                 ,created_at
                 ,content
             FROM notices
-        ORDER BY created_at
+           WHERE 1=1
+         <if test="title != null and title != ''">
+             AND title LIKE CONCAT('%', #{title}, '%')
+         </if>
+             AND deleted = false
+        ORDER BY created_at DESC
+           LIMIT #{size}
+          OFFSET #{offset}
     </select>
 
+    <select id="selectNoticeDetail" parameterType="java.lang.Long"  resultType="notice">
+        SELECT id
+              ,title
+              ,content
+              ,created_at
+          FROM notices
+         WHERE id = #{id}
+           AND deleted = false
+    </select>
+
+    <insert id="insertNotice" useGeneratedKeys="true" keyProperty="id" parameterType="com.matdongsan.api.dto.notice.NoticeCreateRequest">
+        INSERT INTO notices (title, content,author)
+        VALUES (#{title}, #{content},#{author})
+    </insert>
+
+    <update id="updateNotice" parameterType="com.matdongsan.api.dto.notice.NoticeUpdateRequest">
+        UPDATE notices
+           SET title = #{title},
+               content = #{content},
+               updated_at = NOW(),
+               updated_by = #{admin}
+         WHERE id = #{id}
+           AND deleted = false
+    </update>
+
+    <update id="softDeleteNotice" parameterType="com.matdongsan.api.dto.notice.NoticeDeleteRequest">
+        UPDATE notices
+           SET deleted = true,
+               deleted_at = NOW(),
+               deleted_by = #{admin}
+         WHERE id = #{id}
+           AND deleted = false
+    </update>
 </mapper>
