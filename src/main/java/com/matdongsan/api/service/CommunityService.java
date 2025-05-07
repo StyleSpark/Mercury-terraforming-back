@@ -8,11 +8,13 @@ import com.matdongsan.api.mapper.CommunityMapper;
 import com.matdongsan.api.vo.CommunityVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(rollbackFor = Exception.class)
 public class CommunityService {
 
   private final CommunityMapper mapper;
@@ -22,7 +24,7 @@ public class CommunityService {
    * @param id 커뮤니티 id
    * @return 커뮤니티 상세 데이터
    */
-
+  @Transactional(readOnly = true)
   public CommunityVO getCommunityDetail(Long id) {
     return mapper.selectCommunityDetail(id);
   }
@@ -32,6 +34,7 @@ public class CommunityService {
    * @param request 커뮤니티 검색 조건
    * @return 커뮤니티 목록
    */
+  @Transactional(readOnly = true)
   public List<CommunityVO> getCommunityList(CommunityGetRequest request) {
     return mapper.selectCommunities(request);
   }
