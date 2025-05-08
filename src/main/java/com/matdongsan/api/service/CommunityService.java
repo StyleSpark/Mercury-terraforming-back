@@ -62,8 +62,7 @@ public class CommunityService {
   /**
    * 커뮤니티 글 수정
    *
-   * @param id      해당 커뮤니티 id
-   * @param request 커뮤니티 수정 데이터
+   * @param request 커뮤니티 id, 수정 데이터
    */
   public void updateCommunity(CommunityUpdateRequest request) {
     mapper.updateCommunity(request);
@@ -72,8 +71,7 @@ public class CommunityService {
   /**
    * 커뮤니티 글 삭제
    *
-   * @param id      해당 커뮤니티 id
-   * @param request 사용자 정보 데이터
+   * @param request 커뮤니티 id, 사용자 정보 데이터
    */
   public void deleteCommunity(CommunityDeleteRequest request) {
     mapper.deleteCommunity(request);
