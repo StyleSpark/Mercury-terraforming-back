@@ -5,26 +5,26 @@
 
     <select id="selectCommunityDetail" parameterType="java.lang.Long" resultType="community">
         SELECT id AS id
-               ,user_id AS userId
-               ,category_id AS categoryId
-               ,title AS title
-               ,content AS content
-               ,image_urls AS imageUrls
-               ,view_count AS viewCount
-               ,created_at AS createdAt
+               ,user_id
+               ,category_id
+               ,title
+               ,content
+               ,image_urls
+               ,view_count
+               ,created_at
           FROM communities
          WHERE id = #{id}
     </select>
 
     <select id="selectCommunities" parameterType="com.matdongsan.api.dto.community.CommunityGetRequest" resultType="community">
         SELECT id AS id
-               ,user_id AS userId
-               ,category_id AS categoryId
-               ,title AS title
-               ,content AS content
-               ,image_urls AS imageUrls
-               ,view_count AS viewCount
-               ,created_at AS createdAt
+               ,user_id
+               ,category_id
+               ,title
+               ,content
+               ,image_urls
+               ,view_count
+               ,created_at
           FROM communities
          WHERE 1=1
         <if test="title != null and title != ''">
