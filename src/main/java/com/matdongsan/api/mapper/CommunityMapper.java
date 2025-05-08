@@ -12,13 +12,15 @@ import java.util.List;
 
 @Mapper
 public interface CommunityMapper {
-    CommunityVO selectCommunityDetail(Long id);
+  CommunityVO selectCommunityDetail(Long id);
 
-    List<CommunityVO> selectCommunities(CommunityGetRequest request);
+  List<CommunityVO> selectCommunities(CommunityGetRequest request);
 
-    Long insertCommunity(CommunityCreateRequest request);
+  Long insertCommunity(CommunityCreateRequest request);
 
-    void updateCommunity(@Param("id") Long id, @Param("request") CommunityUpdateRequest request);
+  void updateCommunity(@Param("id") Long id, @Param("request") CommunityUpdateRequest request);
 
-    void deleteCommunity(@Param("id") Long id, @Param("request") CommunityDeleteRequest request);
+  void deleteCommunity(@Param("id") Long id, @Param("request") CommunityDeleteRequest request);
+
+  Integer countCommunities(CommunityGetRequest request);
 }

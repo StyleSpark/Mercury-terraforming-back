@@ -32,6 +32,8 @@
         </if>
            AND deleted_at IS NULL
       ORDER BY created_at DESC
+         LIMIT #{size}
+        OFFSET #{offset}
     </select>
 
     <insert id="insertCommunity" useGeneratedKeys="true" keyProperty="id" parameterType="com.matdongsan.api.dto.community.CommunityCreateRequest">
@@ -58,5 +60,15 @@
            AND user_id = #{request.userId}
            AND deleted_at IS NULL
     </update>
+
+    <select id="countCommunities" parameterType="community" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+          FROM communities
+         WHERE 1=1
+        <if test="title != null and title != ''">
+          AND title LIKE CONCAT('%', #{title}, '%')
+        </if>
+          AND deleted_at IS NULL
+    </select>
 
 </mapper>

@@ -12,7 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/community")
@@ -35,12 +35,12 @@ public class CommnunityController {
   /**
    * 커뮤니티 전체 조회
    * @param request 특정 커뮤니티 검색 매개변수
-   * @return 커뮤니티 리스트
+   * @return 페이지와 커뮤니티 리스트
    */
   @GetMapping
   public ResponseEntity<?> getCommunities(CommunityGetRequest request) {
-    List<CommunityVO> communities = service.getCommunityList(request);
-    return ResponseEntity.ok(ApiResponse.success(communities));
+    Map<String, Object> response = service.getCommunityListWithPagination(request);
+    return ResponseEntity.ok(ApiResponse.success(response));
   }
 
   /**
