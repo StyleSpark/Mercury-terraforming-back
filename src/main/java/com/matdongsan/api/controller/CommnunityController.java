@@ -66,7 +66,8 @@ public class CommnunityController {
    */
   @PatchMapping("/{id}")
   public ResponseEntity<?> updateCommunity(@PathVariable Long id, @RequestBody CommunityUpdateRequest request) {
-    service.updateCommunity(id, request);
+    request.setId(id);
+    service.updateCommunity(request);
     return ResponseEntity.ok(ApiResponse.success("커뮤니티 글이 수정되었습니다."));
   }
 
@@ -78,7 +79,8 @@ public class CommnunityController {
    */
   @DeleteMapping("/{id}")
   public ResponseEntity<?> deleteCommunity(@PathVariable Long id, @RequestBody CommunityDeleteRequest request) {
-    service.deleteCommunity(id, request);
+    request.setId(id);
+    service.deleteCommunity(request);
     return ResponseEntity.ok(ApiResponse.success("커뮤니티 글이 삭제되었습니다."));
   }
 }

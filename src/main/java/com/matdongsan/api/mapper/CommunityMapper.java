@@ -18,9 +18,9 @@ public interface CommunityMapper {
 
   Long insertCommunity(CommunityCreateRequest request);
 
-  void updateCommunity(@Param("id") Long id, @Param("request") CommunityUpdateRequest request);
+  void updateCommunity(CommunityUpdateRequest request);
 
-  void deleteCommunity(@Param("id") Long id, @Param("request") CommunityDeleteRequest request);
+  void deleteCommunity(CommunityDeleteRequest request);
 
   Integer countCommunities(CommunityGetRequest request);
 }

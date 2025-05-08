@@ -6,5 +6,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class CommunityDeleteRequest {
+  private Long id;
   private Long userId;
 }

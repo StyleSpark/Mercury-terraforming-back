@@ -41,23 +41,23 @@
         VALUES (#{userId}, #{categoryId}, #{propertyId}, #{title}, #{content}, string_to_array(#{imageUrls}, ','))
     </insert>
 
-    <update id="updateCommunity" parameterType="map">
+    <update id="updateCommunity" parameterType="com.matdongsan.api.dto.community.CommunityUpdateRequest">
         UPDATE communities
-           SET user_id = #{request.userId}
-               ,category_id = #{request.categoryId}
-               ,property_id = #{request.propertyId}
-               ,title = #{request.title}
-               ,content = #{request.content}
-               ,image_urls = string_to_array(#{request.imageUrls}, ',')
+           SET user_id = #{userId}
+               ,category_id = #{categoryId}
+               ,property_id = #{propertyId}
+               ,title = #{title}
+               ,content = #{content}
+               ,image_urls = string_to_array(#{imageUrls}, ',')
                ,updated_at = NOW()
          WHERE id = #{id}
     </update>
 
-    <update id="deleteCommunity" parameterType="map">
+    <update id="deleteCommunity" parameterType="com.matdongsan.api.dto.community.CommunityUpdateRequest">
         UPDATE communities
            SET deleted_at = NOW()
          WHERE id = #{id}
-           AND user_id = #{request.userId}
+           AND user_id = #{userId}
            AND deleted_at IS NULL
     </update>
 
