@@ -6,7 +6,6 @@ import com.matdongsan.api.dto.community.CommunityGetRequest;
 import com.matdongsan.api.dto.community.CommunityUpdateRequest;
 import com.matdongsan.api.vo.CommunityVO;
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -20,7 +19,7 @@ public interface CommunityMapper {
 
   void updateCommunity(CommunityUpdateRequest request);
 
-  void deleteCommunity(CommunityDeleteRequest request);
+  void softDeleteCommunity(CommunityDeleteRequest request);
 
   Integer countCommunities(CommunityGetRequest request);
 }

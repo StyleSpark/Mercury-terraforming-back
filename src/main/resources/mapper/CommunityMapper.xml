@@ -53,7 +53,7 @@
          WHERE id = #{id}
     </update>
 
-    <update id="deleteCommunity" parameterType="com.matdongsan.api.dto.community.CommunityUpdateRequest">
+    <update id="softDeleteCommunity" parameterType="com.matdongsan.api.dto.community.CommunityUpdateRequest">
         UPDATE communities
            SET deleted_at = NOW()
          WHERE id = #{id}

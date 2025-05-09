@@ -75,6 +75,6 @@ public class CommunityService {
    * @param request 커뮤니티 id, 사용자 정보 데이터
    */
   public void deleteCommunity(CommunityDeleteRequest request) {
-    mapper.deleteCommunity(request);
+    mapper.softDeleteCommunity(request);
   }
 }
