@@ -59,8 +59,6 @@ public class CommunityCategoryController {
     return ResponseEntity.ok(ApiResponse.success("커뮤니티 카테고리가 수정되었습니다."));
   }
 
-  // 관리자용 삭제
-
   /**
    * 커뮤니티 카테고리 삭제
    * @param id 카테고리 id
