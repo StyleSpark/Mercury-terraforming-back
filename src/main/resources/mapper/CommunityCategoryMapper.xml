@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.matdongsan.api.mapper.CommunityCategoryMapper">
+
+    <select id="selectCommunityCategories" parameterType="com.matdongsan.api.dto.community.category.CategoryGetRequest" resultType="community_category">
+        SELECT id
+               ,name
+               ,description
+               ,created_at
+          FROM community_categories
+        WHERE 1=1
+        <if test="name != null and name != ''">
+            AND name LIKE CONCAT('%', #{name}, '%')
+        </if>
+        AND deleted_at IS NULL
+        ORDER BY created_at DESC
+    </select>
+    
+    <insert id="insertCommunityCategory" useGeneratedKeys="true" keyProperty="id" parameterType="com.matdongsan.api.dto.community.category.CategoryCreateRequest">
+        INSERT INTO community_categories (name, description)
+        VALUES (#{name}, #{description})
+    </insert>
+
+    <update id="updateCommunityCategory" parameterType="com.matdongsan.api.dto.community.category.CategoryUpdateRequest">
+        UPDATE community_categories
+           SET name = #{name}
+               ,description = #{description}
+               ,updated_at = NOW()
+         WHERE id = #{id}
+    </update>
+
+    <update id="softDeleteCommunityCategory" parameterType="com.matdongsan.api.dto.community.category.CategoryDeleteRequest">
+        UPDATE community_categories
+           SET deleted_at = NOW()
+         WHERE id = #{id}
+           AND name = #{name}
+    </update>
+
+</mapper>
