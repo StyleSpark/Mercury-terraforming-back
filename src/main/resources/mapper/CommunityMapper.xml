@@ -4,7 +4,7 @@
 <mapper namespace="com.matdongsan.api.mapper.CommunityMapper">
 
     <select id="selectCommunityDetail" parameterType="java.lang.Long" resultType="community">
-        SELECT id AS id
+        SELECT id
                ,user_id
                ,category_id
                ,title
@@ -17,7 +17,7 @@
     </select>
 
     <select id="selectCommunities" parameterType="com.matdongsan.api.dto.community.CommunityGetRequest" resultType="community">
-        SELECT id AS id
+        SELECT id
                ,user_id
                ,category_id
                ,title
