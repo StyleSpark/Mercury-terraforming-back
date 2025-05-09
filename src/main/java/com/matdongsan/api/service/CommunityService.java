@@ -56,7 +56,8 @@ public class CommunityService {
    * @return 생성된 커뮤니티 id
    */
   public Long createCommunity(CommunityCreateRequest request) {
-    return mapper.insertCommunity(request);
+    mapper.insertCommunity(request);
+    return request.getId();
   }
 
   /**
