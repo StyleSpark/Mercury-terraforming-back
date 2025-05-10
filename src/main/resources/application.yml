@@ -8,9 +8,10 @@ spring:
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 5
-      minimum-idle: 3
-      idle-timeout: 30000
-      max-lifetime: 600000
+      minimum-idle: 1
+      idle-timeout: 10000
+      max-lifetime: 30000
+      connection-timeout: 3000
   mybatis:
     mapper-locations: classpath:mapper/**/*.xml
     configuration:
