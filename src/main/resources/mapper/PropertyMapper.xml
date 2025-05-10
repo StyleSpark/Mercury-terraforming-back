@@ -51,53 +51,64 @@
 
     <select id="selectProperties" parameterType="com.matdongsan.api.dto.property.PropertyGetRequest"
             resultType="com.matdongsan.api.vo.PropertyVO">
-        SELECT user_id
-              ,title
-              ,category
-              ,price
-              ,deposit
-              ,rental_fee
-              ,floor_type
-              ,floor
-              ,room_size
-              ,maintenance_fee
-              ,thumbnail_url
-              ,status
-              ,address
-              ,address_detail
-              ,postcode
-              ,latitude
-              ,longitude
-              ,hit_count
-              ,property_type_id
-        FROM properties
-        WHERE deleted_at IS null
+        SELECT p.id
+              ,u.nickname
+              ,u.profile
+              ,p.title
+              ,p.category
+              ,p.price
+              ,p.deposit
+              ,p.rental_fee
+              ,p.floor_type
+              ,p.floor
+              ,p.room_size
+              ,p.maintenance_fee
+              ,p.thumbnail_url
+              ,p.status
+              ,p.address
+              ,p.address_detail
+              ,p.postcode
+              ,p.latitude
+              ,p.longitude
+              ,p.hit_count
+              ,p.property_type_id
+              ,p.room_count
+              ,p.bathroom_count
+        FROM properties p
+        INNER JOIN users u
+                ON p.user_id = u.id
+        WHERE P.deleted_at IS null
     </select>
 
     <select id="selectPropertyById" parameterType="java.lang.Long" resultType="com.matdongsan.api.vo.PropertyVO">
-        SELECT id
-            ,user_id
-            ,title
-            ,category
-            ,price
-            ,deposit
-            ,rental_fee
-            ,floor_type
-            ,floor
-            ,room_size
-            ,maintenance_fee
-            ,thumbnail_url
-            ,status
-            ,address
-            ,address_detail
-            ,postcode
-            ,latitude
-            ,longitude
-            ,hit_count
-            ,property_type_id
-        FROM properties
-        WHERE id = #{id}
-          AND deleted_at IS null
+        SELECT p.id
+            ,u.nickname
+            ,u.profile
+            ,p.title
+            ,p.category
+            ,p.price
+            ,p.deposit
+            ,p.rental_fee
+            ,p.floor_type
+            ,p.floor
+            ,p.room_size
+            ,p.maintenance_fee
+            ,p.thumbnail_url
+            ,p.status
+            ,p.address
+            ,p.address_detail
+            ,p.postcode
+            ,p.latitude
+            ,p.longitude
+            ,p.hit_count
+            ,p.property_type_id
+            ,p.room_count
+            ,p.bathroom_count
+        FROM properties p
+        INNER JOIN users u
+        ON p.user_id = u.id
+        WHERE P.deleted_at IS null
+          AND p.id = #{id}
     </select>
 
     <update id="softDeleteProperty" parameterType="com.matdongsan.api.dto.property.PropertyDeleteRequest">

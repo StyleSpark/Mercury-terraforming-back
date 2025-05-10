@@ -13,44 +13,46 @@
         property_id,
         content,
         available_date,
-        bath,
-        has_lift,
-        bed,
-        lot,
-        heating,
-        cooling,
-        microwave,
-        burner,
-        fridge,
-        shoe_closet,
-        tv,
-        closet,
-        dining_table,
-        table_item,
-        washer,
-        induction,
+        has_elevator,
+        has_bed,
+        has_parking,
+        has_heating,
+        has_cooling,
+        has_bath,
+        has_microwave,
+        has_burner,
+        has_fridge,
+        has_shoe_closet,
+        has_tv,
+        has_closet,
+        has_dining_table,
+        has_table_item,
+        has_washer,
+        has_induction,
+        has_pet,
         created_at
         )
         VALUES (
         #{propertyId},
         #{content},
         #{availableDate},
-        #{bath},
-        #{hasLift},
-        #{bed},
-        #{lot},
-        #{heating},
-        #{cooling},
-        #{microwave},
-        #{burner},
-        #{fridge},
-        #{shoeCloset},
-        #{tv},
-        #{closet},
-        #{diningTable},
-        #{tableItem},
-        #{washer},
-        #{induction},
+        #{hasElevator},
+        #{hasBed},
+        #{hasParking},
+        #{hasHeating},
+        #{hasCooling},
+        #{hasBath},
+        #{hasMicrowave},
+        #{hasBurner},
+        #{hasFridge},
+        #{hasShoeCloset},
+        #{hasTv},
+        #{hasCloset},
+        #{hasDiningTable},
+        #{hasTableItem},
+        #{hasWasher},
+        #{hasInduction},
+        #{hasPet},
         #{createdAt}
         )
     </insert>
@@ -59,22 +61,23 @@
         SELECT  id,
         content,
         available_date,
-        bath,
-        has_lift,
-        bed,
-        lot,
-        heating,
-        cooling,
-        microwave,
-        burner,
-        fridge,
-        shoe_closet,
-        tv,
-        closet,
-        dining_table,
-        table_item,
-        washer,
-        induction,
+        has_elevator,
+        has_bed,
+        has_parking,
+        has_heating,
+        has_cooling,
+        has_bath,
+        has_microwave,
+        has_burner,
+        has_fridge,
+        has_shoe_closet,
+        has_tv,
+        has_closet,
+        has_dining_table,
+        has_table_item,
+        has_washer,
+        has_induction,
+        has_pet,
         created_at
         FROM property_details
         WHERE property_id = #{id}
@@ -92,22 +95,24 @@
         <trim prefix="SET" suffixOverrides=",">
             <if test="content != null">content = #{content},</if>
             <if test="availableDate != null">available_date = #{availableDate},</if>
-            <if test="bath != null">bath = #{bath},</if>
-            <if test="hasLift != null">has_lift = #{hasLift},</if>
-            <if test="bed != null">bed = #{bed},</if>
-            <if test="lot != null">lot = #{lot},</if>
-            <if test="heating != null">heating = #{heating},</if>
-            <if test="cooling != null">cooling = #{cooling},</if>
-            <if test="microwave != null">microwave = #{microwave},</if>
-            <if test="burner != null">burner = #{burner},</if>
-            <if test="fridge != null">fridge = #{fridge},</if>
-            <if test="shoeCloset != null">shoe_closet = #{shoeCloset},</if>
-            <if test="tv != null">tv = #{tv},</if>
-            <if test="closet != null">closet = #{closet},</if>
-            <if test="diningTable != null">dining_table = #{diningTable},</if>
-            <if test="tableItem != null">table_item = #{tableItem},</if>
-            <if test="washer != null">washer = #{washer},</if>
-            <if test="induction != null">induction = #{induction}</if>
+            <if test="hasElevator != null">has_elevator = #{hasElevator},</if>
+            <if test="hasBed != null">has_bed = #{hasBed},</if>
+            <if test="hasParking != null">has_parking = #{hasParking},</if>
+            <if test="hasHeating != null">has_heating = #{hasHeating},</if>
+            <if test="hasCooling != null">has_cooling = #{hasCooling},</if>
+            <if test="hasBath != null">has_bath = #{hasBath},</if>
+            <if test="hasMicrowave != null">has_microwave = #{hasMicrowave},</if>
+            <if test="hasBurner != null">has_burner = #{hasBurner},</if>
+            <if test="hasFridge != null">has_fridge = #{hasFridge},</if>
+            <if test="hasShoeCloset != null">has_shoe_closet = #{hasShoeCloset},</if>
+            <if test="hasTv != null">has_tv = #{hasTv},</if>
+            <if test="hasCloset != null">has_closet = #{hasCloset},</if>
+            <if test="hasDiningTable != null">has_dining_table = #{hasDiningTable},</if>
+            <if test="hasTableItem != null">has_table_item = #{hasTableItem},</if>
+            <if test="hasWasher != null">has_washer = #{hasWasher},</if>
+            <if test="hasInduction != null">has_induction = #{hasInduction},</if>
+            <if test="hasPet != null">has_pet = #{hasPet},</if>
+            <if test="createdAt != null">created_at = #{createdAt}</if>
         </trim>
         WHERE property_id = #{propertyId}
         AND deleted_at IS NULL

@@ -10,7 +10,6 @@ import java.util.List;
 @Setter
 public class PropertyVO {
   private Long id;
-  private Long userId;
   private String title;
   private String category;
   private Long price;
@@ -29,7 +28,12 @@ public class PropertyVO {
   private BigDecimal longitude;
   private Long hitCount;
   private Integer propertyTypeId;
+  private Integer roomCount;
+  private Integer bathroomCount;
 
   private List<String> imageUrls;
   private PropertyDetailVO detail;
+
+  private String nickname;
+  private String profile;
 }

@@ -12,23 +12,24 @@ public class PropertyDetailVO {
   private String content;           // 상세 설명
   private LocalDate availableDate;  // 입주 가능일
 
-  private Boolean bath;
-  private Boolean hasLift;
-  private Boolean bed;
-  private Boolean lot;
+  private Boolean hasElevator;
+  private Boolean hasBed;
+  private Boolean hasParking;
 
-  private Boolean heating;
-  private Boolean cooling;
-  private Boolean microwave;
-  private Boolean burner;
-  private Boolean fridge;
-  private Boolean shoeCloset;
-  private Boolean tv;
-  private Boolean closet;
-  private Boolean diningTable;
-  private Boolean tableItem;
-  private Boolean washer;
-  private Boolean induction;
+  private Boolean hasHeating;
+  private Boolean hasCooling;
+  private Boolean hasBath;
+  private Boolean hasMicrowave;
+  private Boolean hasBurner;
+  private Boolean hasFridge;
+  private Boolean hasShoeCloset;
+  private Boolean hasTv;
+  private Boolean hasCloset;
+  private Boolean hasDiningTable;
+  private Boolean hasTableItem;
+  private Boolean hasWasher;
+  private Boolean hasInduction;
+  private Boolean hasPet;
 
   private LocalDateTime createdAt;
 }
