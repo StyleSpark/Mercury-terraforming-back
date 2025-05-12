@@ -27,7 +27,7 @@ public class CommunityService {
    * @return 커뮤니티 상세 데이터
    */
   public CommunityVO getCommunityDetail(Long id) {
-    mapper.updateCommunityViewCount(id);
+    mapper.updateCommunityViewCount(id); // TODO: 유저당 중복 방지를 구현해야할 지?
     return mapper.selectCommunityDetail(id);
   }
 
