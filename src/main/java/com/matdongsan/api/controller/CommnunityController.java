@@ -89,4 +89,23 @@ public class CommnunityController {
     service.deleteCommunity(request);
     return ResponseEntity.ok(ApiResponse.success("커뮤니티 글이 삭제되었습니다."));
   }
+
+  /**
+   * 커뮤니티 게시글 반응(좋아요/싫어요) 등록
+   * @param communityId 커뮤니티 id
+   * @param request 유저 id, reactionType
+   * @return reations id
+   */
+  @PostMapping("/{communityId}/reactions")
+  public ResponseEntity<?> createCommunityReaction(
+          @PathVariable Long communityId,
+          @RequestBody ReactionRequest request) {
+    request.setTargetId(communityId);
+    request.setTargetType("COMMUNITY");
+    Long reactionId = service.createCommunityReaction(request);
+    return ResponseEntity
+            .status(HttpStatus.CREATED)
+            .body(ApiResponse.success(201, reactionId));
+  }
+
 }
