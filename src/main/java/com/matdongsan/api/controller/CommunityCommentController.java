@@ -37,7 +37,7 @@ public class CommunityCommentController {
   }
 
   /**
-   * 특정 커뮤니티 댓글 목록 조회
+   * 특정 커뮤니티 댓글 목록 조회 (오프셋 방식으로 진행)
    * @param communityId 커뮤니티 id
    * @param request 커뮤니티 id, 유저 id, 부모 댓글 id, 내용, 페이지, 사이즈
    * @return 커뮤니티 id, 유저 id, 부모 댓글 id, 내용, 생성일자, 페이지, 사이즈
@@ -52,7 +52,7 @@ public class CommunityCommentController {
   }
 
   /**
-   * 특정 커뮤니티 댓글에 대한 댓글 목록 조회
+   * 특정 커뮤니티 댓글에 대한 댓글 목록 조회 // TODO: 페이지네이션 커서 방식 기본 5개씩 답글 보여주는 형식으로 생각 중
    * @param commentId 커뮤니티 id
    * @param request 커뮤니티 id, 유저 id, 부모 댓글 id, 내용, 페이지, 사이즈
    * @return 커뮤니티 id, 유저 id, 부모 댓글 id, 내용, 생성일자, 페이지, 사이즈
