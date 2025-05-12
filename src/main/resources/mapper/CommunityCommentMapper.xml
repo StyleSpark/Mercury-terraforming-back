@@ -68,6 +68,7 @@
     <update id="updateComment" parameterType="com.matdongsan.api.dto.community.comment.CommentUpdateRequest">
         UPDATE community_comments
            SET content = #{content}
+               ,updated_at = NOW()
          WHERE id = #{id}
            AND user_id = #{userId}
            AND deleted_at IS NULL
