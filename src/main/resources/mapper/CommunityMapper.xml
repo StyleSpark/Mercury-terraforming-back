@@ -74,7 +74,7 @@
     <update id="updateCommunityViewCount" parameterType="java.lang.Long">
         UPDATE communities
            SET view_count = view_count + 1
-         WHERE id = #{id}
+         WHERE id = #{communityId}
            AND deleted_at IS NULL
     </update>
 

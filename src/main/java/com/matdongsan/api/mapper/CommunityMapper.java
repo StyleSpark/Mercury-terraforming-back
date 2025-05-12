@@ -23,5 +23,5 @@ public interface CommunityMapper {
 
   Integer countCommunities(CommunityGetRequest request);
 
-  void updateCommunityViewCount(Long id);
+  void updateCommunityViewCount(Long communityId);
 }

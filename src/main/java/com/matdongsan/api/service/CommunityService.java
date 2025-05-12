@@ -23,12 +23,12 @@ public class CommunityService {
   /**
    * 커뮤니티 상세 조회
    *
-   * @param id 커뮤니티 id
+   * @param communityId 커뮤니티 communityId
    * @return 커뮤니티 상세 데이터
    */
-  public CommunityVO getCommunityDetail(Long id) {
-    mapper.updateCommunityViewCount(id); // TODO: 유저당 중복 방지를 구현해야할 지?
-    return mapper.selectCommunityDetail(id);
+  public CommunityVO getCommunityDetail(Long communityId) {
+    mapper.updateCommunityViewCount(communityId); // TODO: 유저당 중복 방지를 구현해야할 지?
+    return mapper.selectCommunityDetail(communityId);
   }
 
   /**
