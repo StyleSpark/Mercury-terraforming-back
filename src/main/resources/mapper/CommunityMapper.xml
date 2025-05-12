@@ -71,4 +71,11 @@
           AND deleted_at IS NULL
     </select>
 
+    <update id="updateCommunityViewCount" parameterType="java.lang.Long">
+        UPDATE communities
+           SET view_count = view_count + 1
+         WHERE id = #{id}
+           AND deleted_at IS NULL
+    </update>
+
 </mapper>

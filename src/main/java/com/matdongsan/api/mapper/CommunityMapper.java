@@ -22,4 +22,6 @@ public interface CommunityMapper {
   void softDeleteCommunity(CommunityDeleteRequest request);
 
   Integer countCommunities(CommunityGetRequest request);
+
+  void updateCommunityViewCount(Long id);
 }

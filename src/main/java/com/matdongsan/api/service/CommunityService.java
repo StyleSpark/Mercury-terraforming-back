@@ -26,8 +26,8 @@ public class CommunityService {
    * @param id 커뮤니티 id
    * @return 커뮤니티 상세 데이터
    */
-  @Transactional(readOnly = true)
   public CommunityVO getCommunityDetail(Long id) {
+    mapper.updateCommunityViewCount(id);
     return mapper.selectCommunityDetail(id);
   }
 
