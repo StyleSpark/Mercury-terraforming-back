@@ -96,7 +96,43 @@ public class CommunityCommentService {
    */
   @Transactional(readOnly = true)
   public Map<String, Object> getCommentDetailList(CommentGetRequest request) {
-    List<CommunityCommentVO> replies = communityCommentMapper.selectCommentReplies(request);
+    List<CommunityCommentVO> data = communityCommentMapper.selectCommentReplies(request);
+
+    List<Long> targetIds = new ArrayList<>();
+    for (CommunityCommentVO comment : data) {
+      targetIds.add(comment.getId());
+    }
+
+    String targetType = "COMMENT";
+    List<Map<String, Object>> counts = reactionMapper.selectReactionCountGroupByTarget(targetIds, targetType);
+
+    Map<Long, Long> likeMap = new HashMap<>();
+    Map<Long, Long> dislikeMap = new HashMap<>();
+
+    for (Map<String, Object> row : counts) {
+      Long targetId = ((Number) row.get("target_id")).longValue();
+      Long likeCount = ((Number) row.get("like_count")).longValue();
+      Long dislikeCount = ((Number) row.get("dislike_count")).longValue();
+      likeMap.put(targetId, likeCount);
+      dislikeMap.put(targetId, dislikeCount);
+    }
+
+    List<CommentGetResponse> replies = new ArrayList<>();
+    for (CommunityCommentVO vo : data) {
+      CommentGetResponse response = CommentGetResponse.builder()
+              .id(vo.getId())
+              .communityId(vo.getCommunityId())
+              .userId(vo.getUserId())
+              .parentId(vo.getParentId())
+              .content(vo.getContent())
+              .createdAt(vo.getCreatedAt())
+              .likeCount(likeMap.getOrDefault(vo.getId(), 0L))
+              .dislikeCount(dislikeMap.getOrDefault(vo.getId(), 0L))
+              .build();
+
+      replies.add(response);
+    }
+
     Integer total = communityCommentMapper.countCommentReplies(request);
     return Map.of(
             "replies", replies,
