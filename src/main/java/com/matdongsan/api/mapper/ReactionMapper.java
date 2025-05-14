@@ -5,6 +5,9 @@ import com.matdongsan.api.vo.ReactionVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+import java.util.Map;
+
 @Mapper
 public interface ReactionMapper {
   ReactionVO selectReaction(ReactionRequest request);
@@ -13,7 +16,9 @@ public interface ReactionMapper {
 
   Long insertReaction(ReactionRequest request);
 
-  Long selectReactionLikeCount(@Param("communityId") Long communityId, @Param("targetType") String targetType);
+  Long selectReactionLikeCount(Long communityId, String targetType);
 
-  Long selectReactionDislikeCount(@Param("communityId") Long communityId, @Param("targetType") String targetType);
+  Long selectReactionDislikeCount(Long communityId, String targetType);
+
+  List<Map<String, Object>> selectReactionCountGroupByTarget(List<Long> targetIds, String targetType);
 }

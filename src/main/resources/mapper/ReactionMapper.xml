@@ -45,5 +45,18 @@
            AND reaction_type = 'DISLIKE'
     </select>
 
+    <select id="selectReactionCountGroupByTarget" parameterType="map" resultType="map">
+        SELECT target_id
+               ,COUNT(*) FILTER (WHERE reaction_type = 'LIKE') AS like_count
+               ,COUNT(*) FILTER (WHERE reaction_type = 'DISLIKE') AS dislike_count
+          FROM reactions
+         WHERE target_type = #{targetType}
+           AND target_id
+            IN
+        <foreach collection="targetIds" item="id" open="(" separator="," close=")">
+               #{id}
+        </foreach>
+      GROUP BY target_id
+    </select>
 
 </mapper>

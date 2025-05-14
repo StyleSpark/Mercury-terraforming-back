@@ -1,9 +1,6 @@
 package com.matdongsan.api.service;
 
-import com.matdongsan.api.dto.community.comment.CommentCreateRequest;
-import com.matdongsan.api.dto.community.comment.CommentDeleteRequest;
-import com.matdongsan.api.dto.community.comment.CommentGetRequest;
-import com.matdongsan.api.dto.community.comment.CommentUpdateRequest;
+import com.matdongsan.api.dto.community.comment.*;
 import com.matdongsan.api.dto.reaction.ReactionRequest;
 import com.matdongsan.api.mapper.CommunityCommentMapper;
 import com.matdongsan.api.mapper.ReactionMapper;
@@ -13,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -43,7 +42,43 @@ public class CommunityCommentService {
    */
   @Transactional(readOnly = true)
   public Map<String, Object> getCommentList(CommentGetRequest request) {
-    List<CommunityCommentVO> comments = communityCommentMapper.selectComments(request);
+    List<CommunityCommentVO> data = communityCommentMapper.selectComments(request);
+
+    List<Long> targetIds = new ArrayList<>();
+    for (CommunityCommentVO comment : data) {
+      targetIds.add(comment.getId());
+    }
+
+    String targetType = "COMMENT";
+    List<Map<String, Object>> counts = reactionMapper.selectReactionCountGroupByTarget(targetIds, targetType);
+
+    Map<Long, Long> likeMap = new HashMap<>();
+    Map<Long, Long> dislikeMap = new HashMap<>();
+
+    for (Map<String, Object> row : counts) {
+      Long targetId = ((Number) row.get("target_id")).longValue();
+      Long likeCount = ((Number) row.get("like_count")).longValue();
+      Long dislikeCount = ((Number) row.get("dislike_count")).longValue();
+      likeMap.put(targetId, likeCount);
+      dislikeMap.put(targetId, dislikeCount);
+    }
+
+    List<CommentGetResponse> comments = new ArrayList<>();
+    for (CommunityCommentVO vo : data) {
+      CommentGetResponse response = CommentGetResponse.builder()
+              .id(vo.getId())
+              .communityId(vo.getCommunityId())
+              .userId(vo.getUserId())
+              .parentId(vo.getParentId())
+              .content(vo.getContent())
+              .createdAt(vo.getCreatedAt())
+              .likeCount(likeMap.getOrDefault(vo.getId(), 0L))
+              .dislikeCount(dislikeMap.getOrDefault(vo.getId(), 0L))
+              .build();
+
+      comments.add(response);
+    }
+
     Integer total = communityCommentMapper.countCommunityComments(request);
     return Map.of(
             "comments", comments,
