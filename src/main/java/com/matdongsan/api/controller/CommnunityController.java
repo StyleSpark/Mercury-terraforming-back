@@ -1,14 +1,10 @@
 package com.matdongsan.api.controller;
 
 import com.matdongsan.api.dto.ApiResponse;
-import com.matdongsan.api.dto.community.CommunityCreateRequest;
-import com.matdongsan.api.dto.community.CommunityDeleteRequest;
-import com.matdongsan.api.dto.community.CommunityGetRequest;
-import com.matdongsan.api.dto.community.CommunityUpdateRequest;
+import com.matdongsan.api.dto.community.*;
 import com.matdongsan.api.dto.reaction.ReactionRequest;
 import com.matdongsan.api.service.CommunityService;
 import com.matdongsan.api.vo.CommunityVO;
-import com.matdongsan.api.vo.ReactionVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,7 +26,7 @@ public class CommnunityController {
    */
   @GetMapping("/{communityId}")
   public ResponseEntity<?> getCommunityDetail(@PathVariable Long communityId) {
-    CommunityVO community = service.getCommunityDetail(communityId);
+    CommunityGetResponse community = service.getCommunityDetail(communityId);
     return ResponseEntity.ok(ApiResponse.success(community));
   }
 

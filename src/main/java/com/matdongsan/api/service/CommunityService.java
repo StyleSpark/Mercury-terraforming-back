@@ -1,9 +1,6 @@
 package com.matdongsan.api.service;
 
-import com.matdongsan.api.dto.community.CommunityCreateRequest;
-import com.matdongsan.api.dto.community.CommunityDeleteRequest;
-import com.matdongsan.api.dto.community.CommunityGetRequest;
-import com.matdongsan.api.dto.community.CommunityUpdateRequest;
+import com.matdongsan.api.dto.community.*;
 import com.matdongsan.api.dto.reaction.ReactionRequest;
 import com.matdongsan.api.mapper.CommunityMapper;
 import com.matdongsan.api.mapper.ReactionMapper;
@@ -30,9 +27,26 @@ public class CommunityService {
    * @param communityId 커뮤니티 communityId
    * @return 커뮤니티 상세 데이터
    */
-  public CommunityVO getCommunityDetail(Long communityId) {
+  public CommunityGetResponse getCommunityDetail(Long communityId) {
     communityMapper.updateCommunityViewCount(communityId); // TODO: 유저당 중복 방지를 구현해야할 지?
-    return communityMapper.selectCommunityDetail(communityId);
+
+    CommunityVO data = communityMapper.selectCommunityDetail(communityId);
+
+    String targetType = "COMMUNITY";
+    Long likeCount = reactionMapper.selectReactionLikeCount(communityId, targetType);
+    Long dislikeCount = reactionMapper.selectReactionDislikeCount(communityId, targetType);
+
+    return CommunityGetResponse.builder()
+            .communityId(data.getId())
+            .userId(data.getUserId())
+            .title(data.getTitle())
+            .content(data.getContent())
+            .imageUrls(data.getImageUrls())
+            .viewCount(data.getViewCount())
+            .createdAt(data.getCreatedAt())
+            .likeCount(likeCount)
+            .dislikeCount(dislikeCount)
+            .build();
   }
 
   /**
