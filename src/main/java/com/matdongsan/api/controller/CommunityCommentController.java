@@ -5,8 +5,10 @@ import com.matdongsan.api.dto.community.comment.CommentCreateRequest;
 import com.matdongsan.api.dto.community.comment.CommentDeleteRequest;
 import com.matdongsan.api.dto.community.comment.CommentGetRequest;
 import com.matdongsan.api.dto.community.comment.CommentUpdateRequest;
+import com.matdongsan.api.dto.reaction.ReactionRequest;
 import com.matdongsan.api.service.CommunityCommentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -94,6 +96,24 @@ public class CommunityCommentController {
     request.setId(commentId);
     service.deleteComment(request);
     return ResponseEntity.ok(ApiResponse.success("댓글이 삭제되었습니다."));
+  }
+
+  /**
+   * 커뮤니티 댓글 반응(좋아요/싫어요) 등록
+   * @param commentId 커뮤니티 댓글 id
+   * @param request 유저 id, reactionType
+   * @return reations id
+   */
+  @PostMapping("/comments/{commentId}/reactions")
+  public ResponseEntity<?> createCommentReaction(
+          @PathVariable Long commentId,
+          @RequestBody ReactionRequest request) {
+    request.setTargetId(commentId);
+    request.setTargetType("COMMENT");
+    Long reactionId = service.createCommentReaction(request);
+    return ResponseEntity
+            .status(HttpStatus.CREATED)
+            .body(ApiResponse.success(201, reactionId));
   }
 
 }
