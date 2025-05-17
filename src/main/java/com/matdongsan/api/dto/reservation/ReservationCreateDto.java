@@ -3,7 +3,8 @@ package com.matdongsan.api.dto.reservation;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Setter
 @Getter
@@ -13,7 +14,8 @@ public class ReservationCreateDto {
   private Long propertyId;
   private Long userId;
   private String info;
-  private LocalDateTime time;
+  private LocalDate reservedDate;
+  private LocalTime reservedTime;
   private Long deposit;
   private String status;
 }

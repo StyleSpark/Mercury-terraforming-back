@@ -3,7 +3,8 @@ package com.matdongsan.api.vo;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Getter
 @Setter
@@ -13,6 +14,7 @@ public class TempReservationVO {
   private Long propertyId;
   private Long userId;
   private String info;
-  private LocalDateTime time;
+  private LocalDate reservedDate;
+  private LocalTime reservedTime;
   private Long deposit;
 }

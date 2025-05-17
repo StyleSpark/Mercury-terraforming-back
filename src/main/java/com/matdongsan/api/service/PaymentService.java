@@ -59,7 +59,8 @@ public class PaymentService {
     reservation.setUserId(temp.getUserId());
     reservation.setPropertyId(temp.getPropertyId());
     reservation.setInfo(temp.getInfo());
-    reservation.setTime(temp.getTime());
+    reservation.setReservedDate(temp.getReservedDate());
+    reservation.setReservedTime(temp.getReservedTime());
     reservation.setDeposit(temp.getDeposit());
 
     mapper.insertConfirmedReservation(reservation);

@@ -10,7 +10,8 @@
         order_id,
         property_id,
         user_id,
-        time,
+        reserved_date,
+        reserved_time,
         info,
         deposit,
         status,
@@ -19,7 +20,8 @@
         #{orderId},
         #{propertyId},
         #{userId},
-        #{time},
+        #{reservedDate},
+        #{reservedTime},
         #{info},
         #{deposit},
         #{status},
@@ -34,7 +36,8 @@
         property_id,
         user_id,
         info,
-        time,
+        reserved_date,
+        reserved_time,
         deposit
         FROM temp_reservation
         WHERE order_id = #{orderId}
@@ -42,9 +45,9 @@
 
     <insert id="insertConfirmedReservation" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO reservations (
-        order_id, property_id, user_id, reservation_datetime, info, deposit, status, created_at
+        order_id, property_id, user_id, reserved_date,reserved_time, info, deposit, status, created_at
         ) VALUES (
-        #{orderId}, #{propertyId}, #{userId}, #{time}, #{info}, #{deposit}, #{status}, NOW()
+        #{orderId}, #{propertyId}, #{userId}, #{reservedDate}, #{reservedTime}, #{info}, #{deposit}, #{status}, NOW()
         )
     </insert>
 
