@@ -1,11 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.matdongsan.api.mapper.UserMapper">
 
+    <!-- 모든 유저 조회 (개발용) -->
     <select id="findAll" resultType="user">
         SELECT *
         FROM users
     </select>
+
+    <!-- 이메일로 유저 단건 조회 -->
+    <select id="findByEmail" parameterType="String" resultType="user">
+        SELECT *
+        FROM users
+        WHERE email = #{email}
+    </select>
+
+    <!-- 신규 유저 등록 -->
+    <insert id="insertUser" parameterType="user" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO users (
+        email,
+        name,
+        provider,
+        role
+        ) VALUES (
+        #{email},
+        #{name},
+        #{provider},
+        #{role}
+        )
+    </insert>
 
 </mapper>

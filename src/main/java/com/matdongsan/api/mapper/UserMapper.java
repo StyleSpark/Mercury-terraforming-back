@@ -8,4 +8,8 @@ import java.util.List;
 @Mapper
 public interface UserMapper {
   List<UserVO> findAll();
+
+  int insertUser(UserVO user);
+
+  UserVO findByEmail(String email);
 }

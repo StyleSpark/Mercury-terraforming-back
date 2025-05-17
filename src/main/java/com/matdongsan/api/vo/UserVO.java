@@ -7,9 +7,11 @@ import java.time.LocalDateTime;
 @Data
 @Alias("user")
 public class UserVO {
-  private Long id;  // 추가
-  private String name;
+  private Long id;
   private String email;
-  private Integer age;
-  private LocalDateTime createdAt;  // 추가
-  }
+  private String name;
+  private String phoneNumber; // 사용자가 직접 입력
+  private String role;        // 기본값: "USER"
+  private LocalDateTime createdAt;
+  private String provider;
+}
