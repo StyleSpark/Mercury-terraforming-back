@@ -22,6 +22,13 @@ public class UserController {
   private final JwtUtil jwtUtil;
 
   //소셜 로그인
+
+  /**
+   * 소셜 로그인
+   * - 현재는 구글만 구현
+   * @param request
+   * @return
+   */
   @PostMapping("/social-login")
   public ResponseEntity<?> socialLogin(@RequestBody SocialLoginDto request) {
     UserVO user = service.handleSocialLogin(request.getProvider(), request.getToken());
