@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.matdongsan.api.mapper.CommunityMapper">
+
+    <select id="selectCommunityDetail" parameterType="java.lang.Long" resultType="community">
+        SELECT id
+               ,user_id
+               ,category_id
+               ,title
+               ,content
+               ,image_urls
+               ,view_count
+               ,created_at
+          FROM communities
+         WHERE id = #{id}
+    </select>
+
+    <select id="selectCommunities" parameterType="com.matdongsan.api.dto.community.CommunityGetRequest" resultType="community">
+        SELECT id
+               ,user_id
+               ,category_id
+               ,title
+               ,content
+               ,image_urls
+               ,view_count
+               ,created_at
+          FROM communities
+         WHERE 1=1
+        <if test="title != null and title != ''">
+           AND title LIKE CONCAT('%', #{title}, '%')
+        </if>
+           AND deleted_at IS NULL
+      ORDER BY created_at DESC
+         LIMIT #{size}
+        OFFSET #{offset}
+    </select>
+
+    <insert id="insertCommunity" useGeneratedKeys="true" keyProperty="id" parameterType="com.matdongsan.api.dto.community.CommunityCreateRequest">
+        INSERT INTO communities (user_id, category_id, property_id, title, content, image_urls)
+        VALUES (#{userId}, #{categoryId}, #{propertyId}, #{title}, #{content}, string_to_array(#{imageUrls}, ','))
+    </insert>
+
+    <update id="updateCommunity" parameterType="com.matdongsan.api.dto.community.CommunityUpdateRequest">
+        UPDATE communities
+           SET user_id = #{userId}
+               ,category_id = #{categoryId}
+               ,property_id = #{propertyId}
+               ,title = #{title}
+               ,content = #{content}
+               ,image_urls = string_to_array(#{imageUrls}, ',')
+               ,updated_at = NOW()
+         WHERE id = #{id}
+    </update>
+
+    <update id="softDeleteCommunity" parameterType="com.matdongsan.api.dto.community.CommunityUpdateRequest">
+        UPDATE communities
+           SET deleted_at = NOW()
+         WHERE id = #{id}
+           AND user_id = #{userId}
+           AND deleted_at IS NULL
+    </update>
+
+    <select id="countCommunities" parameterType="community" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+          FROM communities
+         WHERE 1=1
+        <if test="title != null and title != ''">
+          AND title LIKE CONCAT('%', #{title}, '%')
+        </if>
+          AND deleted_at IS NULL
+    </select>
+
+    <update id="updateCommunityViewCount" parameterType="java.lang.Long">
+        UPDATE communities
+           SET view_count = view_count + 1
+         WHERE id = #{communityId}
+           AND deleted_at IS NULL
+    </update>
+
+</mapper>
