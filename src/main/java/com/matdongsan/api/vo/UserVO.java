@@ -9,8 +9,9 @@ import java.time.LocalDateTime;
 public class UserVO {
   private Long id;
   private String email;
+  private String password;
   private String name;
-  private String phoneNumber; // 사용자가 직접 입력
+  private String phone; // 사용자가 직접 입력
   private String role;        // 기본값: "USER"
   private LocalDateTime createdAt;
   private String provider;

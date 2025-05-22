@@ -33,4 +33,29 @@
         )
     </insert>
 
+    <insert id="insertUserWithPassword" parameterType="user" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO users (
+        email,
+        name,
+        phone,
+        password,
+        provider,
+        role
+        ) VALUES (
+        #{email},
+        #{name},
+        #{phone},
+        #{password},
+        #{provider},
+        #{role}
+        )
+    </insert>
+
+    <select id="existsByEmail" parameterType="String" resultType="boolean">
+        SELECT EXISTS (
+        SELECT 1
+        FROM users
+        WHERE email = #{email}
+        )
+    </select>
 </mapper>

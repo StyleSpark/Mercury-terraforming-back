@@ -1,6 +1,8 @@
 package com.matdongsan.api.controller;
 
 import com.matdongsan.api.dto.user.SocialLoginDto;
+import com.matdongsan.api.dto.user.UserLoginDto;
+import com.matdongsan.api.dto.user.UserSignupDto;
 import com.matdongsan.api.service.SocialAuthService;
 import com.matdongsan.api.util.JwtUtil;
 import com.matdongsan.api.vo.UserVO;
@@ -26,6 +28,7 @@ public class UserController {
   /**
    * 소셜 로그인
    * - 현재는 구글만 구현
+   *
    * @param request
    * @return
    */
@@ -45,8 +48,37 @@ public class UserController {
   }
 
   // 회원가입
+  @PostMapping("/signup")
+  public ResponseEntity<?> signup(@RequestBody UserSignupDto request) {
+    UserVO createdUser = service.signup(request);
+    String jwt = jwtUtil.generateToken(createdUser.getId(), createdUser.getEmail(), createdUser.getRole());
+    return ResponseEntity.ok(Map.of(
+            "accessToken", jwt,
+            "user", Map.of(
+                    "id", createdUser.getId(),
+                    "email", createdUser.getEmail(),
+                    "name", createdUser.getName(),
+                    "role", createdUser.getRole()
+            )
+    ));
+  }
 
   // 로그인
+  @PostMapping("/login")
+  public ResponseEntity<?> login(@RequestBody UserLoginDto request) {
+    UserVO user = service.login(request.getEmail(), request.getPassword());
+    String jwt = jwtUtil.generateToken(user.getId(), user.getEmail(), user.getRole());
+
+    return ResponseEntity.ok(Map.of(
+            "accessToken", jwt,
+            "user", Map.of(
+                    "id", user.getId(),
+                    "email", user.getEmail(),
+                    "name", user.getName(),
+                    "role", user.getRole()
+            )
+    ));
+  }
 
   // 회원 프로필 조회
 

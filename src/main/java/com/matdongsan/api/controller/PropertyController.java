@@ -9,6 +9,7 @@ import com.matdongsan.api.service.PropertyService;
 import com.matdongsan.api.vo.PropertyVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,13 +27,15 @@ public class PropertyController {
    * @param request
    * @param images
    * @param thumbnail
+   * @param email
    * @return
    */
   @PostMapping
   public ResponseEntity<?> createProperty(
           @RequestPart("request") PropertyCreateRequest request,
           @RequestPart(value = "images", required = false) List<MultipartFile> images,
-          @RequestPart(value = "thumbnail", required = false) MultipartFile thumbnail) {
+          @RequestPart(value = "thumbnail", required = false) MultipartFile thumbnail,
+          @AuthenticationPrincipal String email) {
     request.setImages(images);
     request.setThumbnail(thumbnail);
     Long id = service.createProperty(request);

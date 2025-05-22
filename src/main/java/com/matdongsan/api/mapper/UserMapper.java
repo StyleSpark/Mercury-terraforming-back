@@ -12,4 +12,8 @@ public interface UserMapper {
   int insertUser(UserVO user);
 
   UserVO findByEmail(String email);
+
+  boolean existsByEmail(String email);
+
+  void insertUserWithPassword(UserVO user);
 }
