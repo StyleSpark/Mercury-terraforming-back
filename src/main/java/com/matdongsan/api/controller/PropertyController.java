@@ -5,6 +5,7 @@ import com.matdongsan.api.dto.property.PropertyCreateRequest;
 import com.matdongsan.api.dto.property.PropertyDeleteRequest;
 import com.matdongsan.api.dto.property.PropertyGetRequest;
 import com.matdongsan.api.dto.property.PropertyUpdateRequest;
+import com.matdongsan.api.security.UserRole;
 import com.matdongsan.api.service.PropertyService;
 import com.matdongsan.api.vo.PropertyVO;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,7 +29,7 @@ public class PropertyController {
    * @param request
    * @param images
    * @param thumbnail
-   * @param email
+   * @param user
    * @return
    */
   @PostMapping
@@ -35,7 +37,7 @@ public class PropertyController {
           @RequestPart("request") PropertyCreateRequest request,
           @RequestPart(value = "images", required = false) List<MultipartFile> images,
           @RequestPart(value = "thumbnail", required = false) MultipartFile thumbnail,
-          @AuthenticationPrincipal String email) {
+          @AuthenticationPrincipal UserRole user) {
     request.setImages(images);
     request.setThumbnail(thumbnail);
     Long id = service.createProperty(request);
@@ -48,10 +50,24 @@ public class PropertyController {
    * @return
    */
   @GetMapping
-  public ResponseEntity<?> getProperties(PropertyGetRequest request){
+  public ResponseEntity<?> getProperties(PropertyGetRequest request, @AuthenticationPrincipal UserRole user) {
     List<PropertyVO> properties = service.getProperties(request);
+
+    if (user != null && !properties.isEmpty()) {
+      List<Long> propertyIds = properties.stream()
+              .map(PropertyVO::getId)
+              .toList();
+
+      Set<Long> favoriteIds = service.getFavoritePropertyIds(user.getId(), propertyIds);
+
+      for (PropertyVO property : properties) {
+        property.setIsFavorite(favoriteIds.contains(property.getId()));
+      }
+    }
+
     return ResponseEntity.ok(ApiResponse.success(properties));
   }
+
 
   /**
    * 매물 상세 조회
@@ -59,8 +75,12 @@ public class PropertyController {
    * @return
    */
   @GetMapping("/{id}")
-  public ResponseEntity<?> getPropertyDetail(@PathVariable Long id) {
+  public ResponseEntity<?> getPropertyDetail(@PathVariable Long id,@AuthenticationPrincipal UserRole user) {
     PropertyVO property = service.getPropertyDetail(id);
+    if(user != null){
+    Boolean isFavorite = service.existsFavorite(user.getId(),id);
+    property.setIsFavorite(isFavorite);
+    }
     return ResponseEntity.ok(ApiResponse.success(property));
   }
 

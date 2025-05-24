@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matdongsan.api.mapper.FavoriteMapper">
+    <insert id="createPropertyFavorite" parameterType="com.matdongsan.api.dto.favorite.PropertyFavoriteCreateDto" useGeneratedKeys="true"
+            keyProperty="id">
+        INSERT INTO favorites (
+            user_id,
+            property_id,
+            created_at
+        ) VALUES (
+            #{userId},
+            #{propertyId},
+            NOW()
+        )
+    </insert>
+
+    <delete id="deletePropertyFavorite" parameterType="com.matdongsan.api.dto.favorite.PropertyFavoriteCreateDto">
+        DELETE FROM favorites
+        WHERE user_id = #{userId} AND property_id = #{propertyId}
+    </delete>
+
+</mapper>

@@ -13,7 +13,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 // TODO: optional 추가, s3 추가, exception 전역처리, 성능 추가 점검, 사용자 관련 체크
 
@@ -111,4 +113,12 @@ public class PropertyService {
     return updatedProperty;
   }
 
+  public Boolean existsFavorite(Long userId, Long propertyId) {
+    return detailMapper.existsFavorite(userId,propertyId);
+  }
+
+  public Set<Long> getFavoritePropertyIds(Long userId, List<Long> propertyIds) {
+    if (propertyIds == null || propertyIds.isEmpty()) return Set.of();
+    return new HashSet<>(mapper.getFavoritePropertyIds(userId, propertyIds));
+  }
 }

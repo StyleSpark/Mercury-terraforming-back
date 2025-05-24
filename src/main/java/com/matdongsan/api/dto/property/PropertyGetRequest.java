@@ -9,4 +9,5 @@ public class PropertyGetRequest {
   private String search;
   private int size;
   private int page;
+  private Long userId;
 }

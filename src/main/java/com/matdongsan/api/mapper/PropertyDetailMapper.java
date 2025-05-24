@@ -15,4 +15,6 @@ public interface PropertyDetailMapper {
   int softDeletePropertyDetail(PropertyDeleteRequest request);
 
   int updatePropertyDetail(PropertyDetailRequest detail);
+
+  Boolean existsFavorite(Long userId, Long propertyId);
 }

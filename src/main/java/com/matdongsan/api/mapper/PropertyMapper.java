@@ -21,4 +21,6 @@ public interface PropertyMapper {
   int softDeleteProperty(PropertyDeleteRequest request);
 
   int updateProperty(PropertyUpdateRequest request);
+
+  List<Long> getFavoritePropertyIds(Long userId, List<Long> propertyIds);
 }

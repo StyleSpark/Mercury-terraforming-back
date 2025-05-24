@@ -1,14 +1,17 @@
 package com.matdongsan.api.service;
 
 import com.matdongsan.api.dto.payment.PaymentCreateDto;
+import com.matdongsan.api.dto.payment.PurchaseTicketDto;
 import com.matdongsan.api.dto.reservation.ReservationConfirmDto;
 import com.matdongsan.api.dto.reservation.ReservationCreateDto;
 import com.matdongsan.api.mapper.PaymentMapper;
 import com.matdongsan.api.vo.TempReservationVO;
+import com.matdongsan.api.vo.TicketVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -17,7 +20,6 @@ import java.util.UUID;
 public class PaymentService {
 
   final private PaymentMapper mapper;
-
   /**
    * 임시 예약 데이터 생성
    * @param request
@@ -90,5 +92,27 @@ public class PaymentService {
     UUID uuid = UUID.randomUUID();
     long lsb = uuid.getLeastSignificantBits();
     return Long.toUnsignedString(lsb, 36).toUpperCase(); // 예: ORD-K4L9LJ2B8F3M
+  }
+
+  /**
+   * 등록권 구매
+   * @param request
+   * @return
+   */
+  public Long purchaseTicket(PurchaseTicketDto request) {
+    Long result = 0L;
+
+    request.setOrderId(generateOrderId());
+
+    String itemName = "ticket".equals(request.getTicketId()) ? "등록권" : "대리권";
+    request.setItemName(itemName);
+
+    result += mapper.createTicketPaymentHistory(request); // 구매 기록 생성
+    result += mapper.createPurchaseTicket(request); // 티켓 구매
+    return result;
+  }
+
+  public List<TicketVO> getTicketInfoData(String ticketId) {
+    return mapper.selectTicketInfoData(ticketId);
   }
 }

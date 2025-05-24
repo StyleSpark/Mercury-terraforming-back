@@ -36,4 +36,6 @@ public class PropertyVO {
 
   private String nickname;
   private String profile;
+
+  private Boolean isFavorite;
 }

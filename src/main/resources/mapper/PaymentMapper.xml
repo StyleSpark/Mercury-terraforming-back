@@ -76,4 +76,54 @@
         DELETE FROM temp_reservation WHERE order_id = #{orderId}
     </delete>
 
+    <insert id="createTicketPaymentHistory" parameterType="com.matdongsan.api.dto.payment.PurchaseTicketDto" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO payments (
+            user_id,
+            order_id,
+            payment_key,
+            amount,
+            item_name,
+            created_at,
+            status
+        ) VALUES (
+            #{userId},
+            #{orderId},
+            #{paymentKey},
+            #{amount},
+            #{itemName},
+            NOW(),
+            '결제완료'
+        )
+    </insert>
+
+    <insert id="createPurchaseTicket" parameterType="com.matdongsan.api.dto.payment.PurchaseTicketDto" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO purchase_ticket (
+        user_id,
+        order_id,
+        ticket_id,
+        created_at,
+        remain_count,
+        status
+        ) VALUES (
+        #{userId},
+        #{orderId},
+        #{ticketId},
+        NOW(),
+        '#{remainCount}',
+        'ACTIVE'
+        )
+    </insert>
+
+    <select id="selectTicketInfoData" resultType="ticket">
+        SELECT ID
+              ,NAME
+              ,DESCRIPTION
+              ,PRICE
+              ,QUANTITY
+        FROM ticket_master
+       WHERE 1=1
+        <if test="ticketId != null">
+            AND ID = #{ticketId}
+        </if>
+    </select>
 </mapper>

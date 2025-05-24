@@ -145,4 +145,13 @@
         AND deleted_at IS NULL
     </update>
 
+    <select id="getFavoritePropertyIds" resultType="long">
+        SELECT property_id
+        FROM favorites
+        WHERE user_id = #{userId}
+        AND property_id IN
+        <foreach collection="propertyIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
 </mapper>

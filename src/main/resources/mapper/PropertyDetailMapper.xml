@@ -118,4 +118,11 @@
         AND deleted_at IS NULL
     </update>
 
+    <select id="existsFavorite" resultType="boolean">
+        SELECT EXISTS (
+        SELECT 1 FROM favorites
+        WHERE user_id = #{userId}
+        AND property_id = #{propertyId}
+        )
+    </select>
 </mapper>
