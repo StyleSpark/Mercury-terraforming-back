@@ -5,8 +5,7 @@ import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -32,6 +31,7 @@ public class PropertyCreateRequest {
   private BigDecimal longitude;
   private Long hitCount;
   private Integer propertyTypeId;
+  private List<String> tags;
 
   private MultipartFile thumbnail;
 
@@ -39,5 +39,5 @@ public class PropertyCreateRequest {
   private PropertyDetailRequest detail;
 
   private List<MultipartFile> images;
-  private List<String> imageUrls;
+  private List<String> imageUrls = new ArrayList<>();
 }

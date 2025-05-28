@@ -32,4 +32,6 @@ public interface PaymentMapper {
   Long createPurchaseTicket(PurchaseTicketDto request);
 
   List<TicketVO> selectTicketInfoData(String ticketId);
+
+  int consumeTicket(Long userId);
 }

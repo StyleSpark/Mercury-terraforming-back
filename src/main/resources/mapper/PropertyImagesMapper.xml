@@ -3,7 +3,7 @@
 
 <mapper namespace="com.matdongsan.api.mapper.PropertyImagesMapper">
 
-    <insert id="insertPropertyImage" parameterType="map">
+    <insert id="insertPropertyImage" parameterType="map" >
         INSERT INTO property_detail_images (property_id, image_url)
         VALUES (#{propertyId}, #{imageUrl})
     </insert>

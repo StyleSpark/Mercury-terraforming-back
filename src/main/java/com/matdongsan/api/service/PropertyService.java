@@ -4,6 +4,7 @@ import com.matdongsan.api.dto.property.PropertyCreateRequest;
 import com.matdongsan.api.dto.property.PropertyDeleteRequest;
 import com.matdongsan.api.dto.property.PropertyGetRequest;
 import com.matdongsan.api.dto.property.PropertyUpdateRequest;
+import com.matdongsan.api.mapper.PaymentMapper;
 import com.matdongsan.api.mapper.PropertyDetailMapper;
 import com.matdongsan.api.mapper.PropertyImagesMapper;
 import com.matdongsan.api.mapper.PropertyMapper;
@@ -12,6 +13,7 @@ import com.matdongsan.api.vo.PropertyVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashSet;
 import java.util.List;
@@ -30,26 +32,67 @@ public class PropertyService {
 
   private final PropertyImagesMapper imagesMapper;
 
+  private final PaymentMapper paymentMapper;
+
+  private final S3Service s3Service;
+
+  private final ImageConversionService imageConversionService;
+
   public Long createProperty(PropertyCreateRequest request) {
-    //property 생성
-    Long propertyId = mapper.insertProperty(request);
+
+    // 0. 등록권 체크
+    // 아래 코드는 기능적으로는 문제가 없지만 동시성 문제에서 취약한 문제를 가지고 있음
+    //boolean hasTicket = paymentMapper.checkTicketByUserId(request.getUserId());
+
+    int updatedRows = paymentMapper.consumeTicket(request.getUserId());
+
+    if (updatedRows != 1) {
+      throw new IllegalStateException ("등록권이 없습니다.");
+    }
+
+    //  1. 썸네일 이미지 업로드 먼저 수행 (ID 없음 → temp 이름)
+    if (request.getThumbnail() != null && !request.getThumbnail().isEmpty()) {
+      try {
+        byte[] webpThumbnail = imageConversionService.convertToWebP(request.getThumbnail());
+        String thumbKey = "properties/temp_" + System.currentTimeMillis() + "_thumb.webp";
+        String thumbnailUrl = s3Service.uploadBytes(thumbKey, webpThumbnail, "image/webp");
+        request.setThumbnailUrl(thumbnailUrl);
+      } catch (Exception e) {
+        throw new RuntimeException("썸네일 업로드 실패", e);
+      }
+    }
+
+    // 2. DB에 매물 기본 정보 + 썸네일 URL 한 번에 insert
+    mapper.insertProperty(request);
+    Long propertyId = request.getId();
     if (propertyId == null) throw new RuntimeException("매물 저장 실패");
-    
-    //property_detail 생성
-    // s3를 통해 이미지 url 추출 로직 추가 해야함
+
+    // 3. 상세 정보 저장
     request.getDetail().setPropertyId(propertyId);
     int detailResult = detailMapper.insertPropertyDetail(request.getDetail());
     if (detailResult != 1) throw new RuntimeException("상세 저장 실패");
 
-    //property_images 생성
-    if (request.getImages() != null) {
-      for (String imageUrl : request.getImageUrls()) {
-        int imageResult = imagesMapper.insertPropertyImage(propertyId, imageUrl);
-        if (imageResult != 1) throw new RuntimeException("이미지 저장 실패: " + imageUrl);
+    // 4. 추가 이미지들 S3 업로드 및 DB 저장
+    if (request.getImages() != null && !request.getImages().isEmpty()) {
+      for (MultipartFile image : request.getImages()) {
+        try {
+          byte[] webpImage = imageConversionService.convertToWebP(image);
+          String imageKey = "properties/" + propertyId + "_" + System.currentTimeMillis() + ".webp";
+          String imageUrl = s3Service.uploadBytes(imageKey, webpImage, "image/webp");
+
+          int result = imagesMapper.insertPropertyImage(propertyId, imageUrl);
+          if (result != 1) throw new RuntimeException("이미지 저장 실패: " + imageUrl);
+
+          request.getImageUrls().add(imageUrl); // 리턴용
+        } catch (Exception e) {
+          throw new RuntimeException("이미지 업로드 실패", e);
+        }
       }
     }
+
     return propertyId;
   }
+
 
   @Transactional(readOnly = true)
   public List<PropertyVO> getProperties(PropertyGetRequest request) {

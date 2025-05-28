@@ -29,8 +29,7 @@
         has_table_item,
         has_washer,
         has_induction,
-        has_pet,
-        created_at
+        has_pet
         )
         VALUES (
         #{propertyId},
@@ -52,8 +51,7 @@
         #{hasTableItem},
         #{hasWasher},
         #{hasInduction},
-        #{hasPet},
-        #{createdAt}
+        #{hasPet}
         )
     </insert>
 

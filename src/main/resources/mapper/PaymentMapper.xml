@@ -126,4 +126,23 @@
             AND ID = #{ticketId}
         </if>
     </select>
+
+    <update id="consumeTicket">
+       UPDATE purchase_ticket
+          SET remain_count = remain_count - 1,
+              used_at = NOW(),
+              status = CASE WHEN remain_count - 1 = 0 THEN 'USED' ELSE status END
+        WHERE id = (
+       SELECT id
+         FROM purchase_ticket
+        WHERE user_id = #{userId}
+          AND remain_count > 0
+          AND status = 'ACTIVE'
+          AND valid_until >= CURRENT_DATE
+     ORDER BY valid_until ASC
+        LIMIT 1
+        )
+    </update>
+
+
 </mapper>

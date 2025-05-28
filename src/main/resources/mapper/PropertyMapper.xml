@@ -154,4 +154,12 @@
             #{id}
         </foreach>
     </select>
+<!--나중에 필요할듯-->
+    <update id="updateThumbnailUrl"
+            parameterType="map">
+        UPDATE properties
+        SET thumbnail_url = #{thumbnailUrl}
+        WHERE id = #{propertyId}
+        AND deleted_at IS NULL
+    </update>
 </mapper>

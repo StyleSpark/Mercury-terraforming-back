@@ -39,6 +39,7 @@ public class PropertyController {
           @RequestPart(value = "thumbnail", required = false) MultipartFile thumbnail,
           @AuthenticationPrincipal UserRole user) {
     request.setImages(images);
+    request.setUserId(user.getId());
     request.setThumbnail(thumbnail);
     Long id = service.createProperty(request);
     return ResponseEntity.ok(ApiResponse.success(id));
