@@ -1,6 +1,7 @@
 package com.matdongsan.api.controller;
 
 import com.matdongsan.api.dto.ApiResponse;
+import com.matdongsan.api.dto.agent.AgentGetRequest;
 import com.matdongsan.api.dto.user.SocialLoginDto;
 import com.matdongsan.api.dto.user.UserLoginDto;
 import com.matdongsan.api.dto.user.UserSignupDto;
@@ -10,6 +11,7 @@ import com.matdongsan.api.util.JwtUtil;
 import com.matdongsan.api.vo.AgentVO;
 import com.matdongsan.api.vo.UserVO;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,6 +20,7 @@ import java.util.Map;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/auth")
+@Slf4j
 public class UserController {
 
   private final SocialAuthService service;
@@ -97,6 +100,17 @@ public class UserController {
   }
 
   // 중개인 목록 조회
+  @GetMapping("/agents")
+  public ResponseEntity<?> getAgents(AgentGetRequest request) {
+    log.info("지역: " + request.getAddress());
+    log.info("중개인 이름: " + request.getAgentName());
+    log.info("브랜드명: " + request.getBrandName());
+    log.info("매물명: " + request.getPropertyName());
+    log.info("매물 유형: " + request.getPropertyType());
+
+    Map<String, Object> response = agentService.getAgentListWithPagination(request);
+    return ResponseEntity.ok(ApiResponse.success(response));
+  }
 
   // 중개인 삭제
 

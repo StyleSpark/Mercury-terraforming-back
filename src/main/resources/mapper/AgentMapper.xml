@@ -5,21 +5,96 @@
 
     <select id="selectAgentDetail" parameterType="java.lang.Long" resultType="agent">
         SELECT a.id
-        ,u.id AS user_id
-        ,u.name AS agent_name
-        ,a.brand
-        ,a.address
-        ,a.address_detail
-        ,a.latitude
-        ,a.longitude
-        ,a.profile_url
-        ,a.created_at
-        ,a.license_number
-        ,a.review_avg
-        ,a.review_count
-        FROM agents a, users u
-        WHERE a.id = #{agentId}
-        AND a.user_id = u.id
+               ,u.id AS user_id
+               ,u.name AS agent_name
+               ,a.brand
+               ,a.address
+               ,a.address_detail
+               ,a.latitude
+               ,a.longitude
+               ,a.profile_url
+               ,a.created_at
+               ,a.license_number
+               ,a.review_avg
+               ,a.review_count
+          FROM agents a, users u
+         WHERE a.id = #{agentId}
+           AND a.user_id = u.id
+    </select>
+
+    <select id="selectAgents" parameterType="com.matdongsan.api.dto.agent.AgentGetRequest" resultType="com.matdongsan.api.dto.agent.AgentGetResponse">
+        SELECT a.id AS agentId
+               ,u.name AS agentName
+               ,u.profile AS agentProfileUrl
+               ,a.profile_url AS officeUrl
+               ,a.brand AS brandName
+               ,a.address AS address
+          FROM agents a
+    INNER JOIN users u ON a.user_id = u.id
+         WHERE u.deleted_at IS NULL
+           AND u.is_agent = TRUE
+           AND u.agent_verified = TRUE
+        <if test="address != null and address != ''">
+           AND a.address LIKE CONCAT('%', #{address}, '%')
+        </if>
+        <if test="propertyName != null and propertyName != ''">
+           AND EXISTS (
+           SELECT 1
+             FROM properties p
+            WHERE p.user_id = u.id
+              AND p.title LIKE CONCAT('%', #{propertyName}, '%')
+            )
+        </if>
+        <if test="propertyType != null and propertyType != ''">
+           AND EXISTS (
+           SELECT 1
+             FROM properties p
+            WHERE p.user_id = u.id
+              AND p.category LIKE CONCAT('%', #{propertyType}, '%')
+            )
+        </if>
+        <if test="agentName != null and agentName != ''">
+              AND u.name LIKE CONCAT('%', #{agentName}, '%')
+        </if>
+        <if test="brandName != null and brandName != ''">
+              AND a.brand LIKE CONCAT('%', #{brandName}, '%')
+        </if>
+      ORDER BY a.created_at DESC
+         LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="countAgents" parameterType="com.matdongsan.api.dto.agent.AgentGetRequest" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+          FROM agents a
+    INNER JOIN users u ON a.user_id = u.id
+        WHERE u.deleted_at IS NULL
+        AND u.is_agent = TRUE
+        AND u.agent_verified = TRUE
+        <if test="address != null and address != ''">
+            AND a.address LIKE CONCAT('%', #{address}, '%')
+        </if>
+        <if test="propertyName != null and propertyName != ''">
+            AND EXISTS (
+            SELECT 1
+            FROM properties p
+            WHERE p.user_id = u.id
+            AND p.title LIKE CONCAT('%', #{propertyName}, '%')
+            )
+        </if>
+        <if test="propertyType != null and propertyType != ''">
+            AND EXISTS (
+            SELECT 1
+            FROM properties p
+            WHERE p.user_id = u.id
+            AND p.category LIKE CONCAT('%', #{propertyType}, '%')
+            )
+        </if>
+        <if test="agentName != null and agentName != ''">
+            AND u.name LIKE CONCAT('%', #{agentName}, '%')
+        </if>
+        <if test="brandName != null and brandName != ''">
+            AND a.brand LIKE CONCAT('%', #{brandName}, '%')
+        </if>
     </select>
 
 </mapper>
