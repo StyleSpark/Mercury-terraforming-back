@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/community")
+@RequestMapping("/api/communities")
 @RequiredArgsConstructor
 public class CommnunityController {
 

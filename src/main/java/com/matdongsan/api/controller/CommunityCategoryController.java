@@ -15,7 +15,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/community/categories")
+@RequestMapping("/api/communities/categories")
 public class CommunityCategoryController {
 
   private final CommunityCategoryService service;
