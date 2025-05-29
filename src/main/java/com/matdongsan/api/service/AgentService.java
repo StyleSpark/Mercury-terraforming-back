@@ -28,7 +28,11 @@ public class AgentService {
     return mapper.selectAgentDetail(agentId);
   }
 
-  // 중개인 목록 조회
+  /**
+   * 중개인 목록 조회
+   * @param request 지역:address, 매물명:propertyName, 매물 유형:propertyType, 중개인 이름:agentName, 브랜드명:brandName
+   * @return AgentGetResponse, 검색 결과 총 갯수, 페이지, 페이지 사이즈
+   */
   @Transactional(readOnly = true)
   public Map<String, Object> getAgentListWithPagination(AgentGetRequest request) {
     List<AgentGetResponse> agents = mapper.selectAgents(request);
