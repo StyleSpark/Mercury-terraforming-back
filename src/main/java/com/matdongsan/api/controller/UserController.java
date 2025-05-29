@@ -1,17 +1,17 @@
 package com.matdongsan.api.controller;
 
+import com.matdongsan.api.dto.ApiResponse;
 import com.matdongsan.api.dto.user.SocialLoginDto;
 import com.matdongsan.api.dto.user.UserLoginDto;
 import com.matdongsan.api.dto.user.UserSignupDto;
+import com.matdongsan.api.service.AgentService;
 import com.matdongsan.api.service.SocialAuthService;
 import com.matdongsan.api.util.JwtUtil;
+import com.matdongsan.api.vo.AgentVO;
 import com.matdongsan.api.vo.UserVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -22,6 +22,7 @@ public class UserController {
 
   private final SocialAuthService service;
   private final JwtUtil jwtUtil;
+  private final AgentService agentService;
 
   //소셜 로그인
 
@@ -84,15 +85,30 @@ public class UserController {
 
   // 대리인 등록 신청
 
-  // 중개인 조회
+  /**
+   * 중개인 단일 조회
+   * @param agentId 중개인 고유 id
+   * @return 중개인 데이터
+   */
+  @GetMapping("/agents/{agentId}")
+  public ResponseEntity<?> getAgentDetail(@PathVariable Long agentId) {
+    AgentVO agentDetail = agentService.getAgentDetail(agentId);
+    return ResponseEntity.ok(ApiResponse.success(agentDetail));
+  }
+
+  // 중개인 목록 조회
 
   // 중개인 삭제
 
-  // 중개인 댓글 작성
+  // 중개인 리뷰 작성
 
-  // 중개인 댓글 조회
+  // 중개인 리뷰 조회
 
-  // 중개인 댓글 수정
+  // 중개인 리뷰 수정
 
-  // 중개인 댓글 삭제
+  // 중개인 리뷰 삭제
+
+  // 중개인 신고
+
+  // 중개인 채팅
 }
