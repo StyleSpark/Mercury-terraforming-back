@@ -16,3 +16,8 @@ spring:
     mapper-locations: classpath:mapper/**/*.xml
     configuration:
       map-underscore-to-camel-case: true
+
+vworld:
+  api:
+    key: ${secret.vworld.api-key}
+    base-url: https://api.vworld.kr/ned/data/getEBBrokerInfo
