@@ -5,6 +5,7 @@ import com.matdongsan.api.dto.agent.AgentGetResponse;
 import com.matdongsan.api.dto.agent.AgentRegisterRequest;
 import com.matdongsan.api.vo.AgentVO;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -17,4 +18,6 @@ public interface AgentMapper {
   Integer countAgents(AgentGetRequest request);
 
   void insertAgent(AgentRegisterRequest request);
+
+  void softDeleteAgentByUserId(@Param("userId") Long userId);
 }

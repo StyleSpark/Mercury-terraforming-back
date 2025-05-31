@@ -1,5 +1,6 @@
 package com.matdongsan.api.service;
 
+import com.matdongsan.api.dto.agent.AgentDeleteRequest;
 import com.matdongsan.api.dto.agent.AgentGetRequest;
 import com.matdongsan.api.dto.agent.AgentGetResponse;
 import com.matdongsan.api.dto.agent.AgentRegisterRequest;
@@ -8,6 +9,7 @@ import com.matdongsan.api.mapper.AgentMapper;
 import com.matdongsan.api.mapper.UserMapper;
 import com.matdongsan.api.vo.AgentVO;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +19,7 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 @Transactional(rollbackFor = Exception.class)
+@Slf4j
 public class AgentService {
 
   private final AgentMapper agentMapper;
@@ -67,5 +70,15 @@ public class AgentService {
 
     // 사용자 상태 변경
     userMapper.updateAgentStatus(request.getUserId());
+  }
+
+  /**
+   * 중개인 삭제 (더 이상 '중개인'으로써 활동을 하고 싶지 않을 때라 가정, agents 테이블의 deleted_at 값 변경 / soft-delete)
+   * @param request userId TODO: 로그인 사용자 인증 구현 후 수정
+   */
+  public void deleteAgent(AgentDeleteRequest request) {
+    Long userId = request.getUserId();
+    log.info(userId.toString());
+    agentMapper.softDeleteAgentByUserId(userId);
   }
 }

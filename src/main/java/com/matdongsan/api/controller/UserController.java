@@ -1,6 +1,7 @@
 package com.matdongsan.api.controller;
 
 import com.matdongsan.api.dto.ApiResponse;
+import com.matdongsan.api.dto.agent.AgentDeleteRequest;
 import com.matdongsan.api.dto.agent.AgentGetRequest;
 import com.matdongsan.api.dto.agent.AgentRegisterRequest;
 import com.matdongsan.api.dto.user.SocialLoginDto;
@@ -121,7 +122,17 @@ public class UserController {
     return ResponseEntity.ok(ApiResponse.success("중개인 등록 신청이 완료되었습니다."));
   }
 
-  // 중개인 삭제
+  /**
+   * 중개인 삭제 (더 이상 '중개인'으로써 활동을 하고 싶지 않을 때라 가정, agents 테이블의 deleted_at 값 변경 / soft-delete)
+   * @param request userId TODO: 로그인 사용자 인증 구현 후 수정
+   * @return 중개인 삭제 성공 여부
+   */
+  @DeleteMapping("/agents/me")
+  public ResponseEntity<?> deleteAgent(@RequestBody AgentDeleteRequest request) {
+    agentService.deleteAgent(request);
+    return ResponseEntity.ok(ApiResponse.success("중개인 삭제가 완료되었습니다."));
+  }
+
 
   // 중개인 리뷰 작성
 

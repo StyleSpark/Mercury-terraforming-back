@@ -124,4 +124,11 @@
         )
     </insert>
 
+    <update id="softDeleteAgentByUserId" parameterType="java.lang.Long">
+        UPDATE agents
+           SET deleted_at = NOW()
+         WHERE user_id = #{userId}
+           AND deleted_at IS NULL
+    </update>
+
 </mapper>
