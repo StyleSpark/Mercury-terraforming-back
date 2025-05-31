@@ -114,16 +114,12 @@ public class UserController {
    * @param request AgentRegisterRequest
    * @return 중개인 등록 성공 여부
    */
-  @PostMapping("/agents/register")
+  @PostMapping("/agents/me")
   public ResponseEntity<?> registerAgent(@RequestBody AgentRegisterRequest request) {
     // TODO: 로그인 사용자 인증 구현 후 수정 필요
     agentService.registerAgent(request);
     return ResponseEntity.ok(ApiResponse.success("중개인 등록 신청이 완료되었습니다."));
   }
-
-
-
-
 
   // 중개인 삭제
 
