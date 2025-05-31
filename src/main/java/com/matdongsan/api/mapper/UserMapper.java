@@ -16,4 +16,6 @@ public interface UserMapper {
   boolean existsByEmail(String email);
 
   void insertUserWithPassword(UserVO user);
+
+  void updateAgentStatus(Long userId);
 }

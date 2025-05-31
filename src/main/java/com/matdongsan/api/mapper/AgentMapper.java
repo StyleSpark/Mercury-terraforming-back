@@ -2,6 +2,7 @@ package com.matdongsan.api.mapper;
 
 import com.matdongsan.api.dto.agent.AgentGetRequest;
 import com.matdongsan.api.dto.agent.AgentGetResponse;
+import com.matdongsan.api.dto.agent.AgentRegisterRequest;
 import com.matdongsan.api.vo.AgentVO;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -14,4 +15,6 @@ public interface AgentMapper {
   List<AgentGetResponse> selectAgents(AgentGetRequest request);
 
   Integer countAgents(AgentGetRequest request);
+
+  void insertAgent(AgentRegisterRequest request);
 }

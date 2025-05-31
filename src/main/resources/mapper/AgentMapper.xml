@@ -97,4 +97,31 @@
         </if>
     </select>
 
+    <insert id="insertAgent" parameterType="com.matdongsan.api.dto.agent.AgentRegisterRequest">
+        INSERT INTO agents (
+            user_id
+            ,brand
+            ,address
+            ,address_detail
+            ,latitude
+            ,longitude
+            ,profile_url
+            ,license_number
+            ,bio
+            ,created_at
+        )
+        VALUES (
+            #{userId}
+            ,#{officeName}
+            ,#{address}
+            ,#{addressDetail}
+            ,#{latitude}
+            ,#{longitude}
+            ,#{profileUrl}
+            ,#{jurirno}
+            ,#{bio}
+            ,NOW()
+        )
+    </insert>
+
 </mapper>

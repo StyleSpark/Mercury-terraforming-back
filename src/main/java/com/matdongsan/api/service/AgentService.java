@@ -2,7 +2,10 @@ package com.matdongsan.api.service;
 
 import com.matdongsan.api.dto.agent.AgentGetRequest;
 import com.matdongsan.api.dto.agent.AgentGetResponse;
+import com.matdongsan.api.dto.agent.AgentRegisterRequest;
+import com.matdongsan.api.external.agent.verifier.AgentLicenseVerifier;
 import com.matdongsan.api.mapper.AgentMapper;
+import com.matdongsan.api.mapper.UserMapper;
 import com.matdongsan.api.vo.AgentVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,7 +19,9 @@ import java.util.Map;
 @Transactional(rollbackFor = Exception.class)
 public class AgentService {
 
-  private final AgentMapper mapper;
+  private final AgentMapper agentMapper;
+  private final UserMapper userMapper;
+  private final AgentLicenseVerifier licenseVerifier;
 
   /**
    * 중개인 단일 조회
@@ -25,7 +30,7 @@ public class AgentService {
    */
   @Transactional(readOnly = true)
   public AgentVO getAgentDetail(Long agentId) {
-    return mapper.selectAgentDetail(agentId);
+    return agentMapper.selectAgentDetail(agentId);
   }
 
   /**
@@ -35,8 +40,8 @@ public class AgentService {
    */
   @Transactional(readOnly = true)
   public Map<String, Object> getAgentListWithPagination(AgentGetRequest request) {
-    List<AgentGetResponse> agents = mapper.selectAgents(request);
-    Integer total = mapper.countAgents(request);
+    List<AgentGetResponse> agents = agentMapper.selectAgents(request);
+    Integer total = agentMapper.countAgents(request);
 
     return Map.of(
             "agents", agents,
@@ -46,4 +51,21 @@ public class AgentService {
     );
   }
 
+  /**
+   * 중개인 등록 (회원 -> 중개인 전환)
+   * @param request AgentRegisterRequest
+   * @return 중개인 등록 성공 여부
+   */
+  public void registerAgent(AgentRegisterRequest request) {
+    // 중개인인지 확인 (외부 API를 호출하여 자동으로 승인하는 방향으로 설계)
+    if(!licenseVerifier.verify(request)) {
+      throw new IllegalArgumentException("공인중개사 정보가 확인되지 않았습니다.");
+    }
+
+    // Agent 등록
+    agentMapper.insertAgent(request);
+
+    // 사용자 상태 변경
+    userMapper.updateAgentStatus(request.getUserId());
+  }
 }
