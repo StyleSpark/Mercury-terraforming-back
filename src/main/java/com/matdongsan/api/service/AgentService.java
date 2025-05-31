@@ -1,9 +1,6 @@
 package com.matdongsan.api.service;
 
-import com.matdongsan.api.dto.agent.AgentDeleteRequest;
-import com.matdongsan.api.dto.agent.AgentGetRequest;
-import com.matdongsan.api.dto.agent.AgentGetResponse;
-import com.matdongsan.api.dto.agent.AgentRegisterRequest;
+import com.matdongsan.api.dto.agent.*;
 import com.matdongsan.api.external.agent.verifier.AgentLicenseVerifier;
 import com.matdongsan.api.mapper.AgentMapper;
 import com.matdongsan.api.mapper.UserMapper;
@@ -80,5 +77,13 @@ public class AgentService {
     Long userId = request.getUserId();
     log.info(userId.toString());
     agentMapper.softDeleteAgentByUserId(userId);
+  }
+
+  /**
+   * 중개인 수정 (이직, 사무소 이동, 자기소개 등)
+   * @param request AgentUpdateRequest, userId
+   */
+  public void updateAgent(AgentUpdateRequest request, Long userId) {
+    agentMapper.updateAgent(request, userId);
   }
 }

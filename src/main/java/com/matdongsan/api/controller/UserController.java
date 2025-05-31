@@ -4,6 +4,7 @@ import com.matdongsan.api.dto.ApiResponse;
 import com.matdongsan.api.dto.agent.AgentDeleteRequest;
 import com.matdongsan.api.dto.agent.AgentGetRequest;
 import com.matdongsan.api.dto.agent.AgentRegisterRequest;
+import com.matdongsan.api.dto.agent.AgentUpdateRequest;
 import com.matdongsan.api.dto.user.SocialLoginDto;
 import com.matdongsan.api.dto.user.UserLoginDto;
 import com.matdongsan.api.dto.user.UserSignupDto;
@@ -131,6 +132,18 @@ public class UserController {
   public ResponseEntity<?> deleteAgent(@RequestBody AgentDeleteRequest request) {
     agentService.deleteAgent(request);
     return ResponseEntity.ok(ApiResponse.success("중개인 삭제가 완료되었습니다."));
+  }
+
+  /**
+   * 중개인 수정 (이직, 사무소 이동, 자기소개 등)
+   * @param request AgentUpdateRequest
+   * @return 중개인 수정 성공 여부
+   */
+  @PatchMapping("/agents/me")
+  public ResponseEntity<?> updateAgent(@RequestBody AgentUpdateRequest request) {
+    Long userId = 12L; // TODO: 로그인 사용자 인증 구현 후 수정
+    agentService.updateAgent(request, userId);
+    return ResponseEntity.ok(ApiResponse.success("중개인 정보가 수정되었습니다."));
   }
 
 

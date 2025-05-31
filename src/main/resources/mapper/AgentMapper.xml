@@ -131,4 +131,18 @@
            AND deleted_at IS NULL
     </update>
 
+    <update id="updateAgent">
+        UPDATE agents
+           SET brand = #{request.officeName}
+               ,address = #{request.address}
+               ,address_detail = #{request.addressDetail}
+               ,latitude = #{request.latitude}
+               ,longitude = #{request.longitude}
+               ,profile_url = #{request.profileUrl}
+               ,bio = #{request.bio}
+               ,updated_at = NOW()
+         WHERE user_id = #{userId}
+           AND deleted_at IS NULL
+    </update>
+
 </mapper>

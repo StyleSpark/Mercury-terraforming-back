@@ -3,6 +3,7 @@ package com.matdongsan.api.mapper;
 import com.matdongsan.api.dto.agent.AgentGetRequest;
 import com.matdongsan.api.dto.agent.AgentGetResponse;
 import com.matdongsan.api.dto.agent.AgentRegisterRequest;
+import com.matdongsan.api.dto.agent.AgentUpdateRequest;
 import com.matdongsan.api.vo.AgentVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -20,4 +21,6 @@ public interface AgentMapper {
   void insertAgent(AgentRegisterRequest request);
 
   void softDeleteAgentByUserId(@Param("userId") Long userId);
+
+  void updateAgent(@Param("request") AgentUpdateRequest request, @Param("userId") Long userId);
 }
