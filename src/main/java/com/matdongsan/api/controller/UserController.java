@@ -210,7 +210,20 @@ public class UserController {
     return ResponseEntity.ok(ApiResponse.success("중개인에 대한 리뷰가 작성되었습니다."));
   }
 
-  // 중개인 리뷰 조회
+  // 중개인 리뷰 목록 조회
+
+  /**
+   * 특정 중개인의 리뷰 목록 조회
+   * @param agentId 중개인 고유 id
+   * @param request agentId, 페이지, 사이즈
+   * @return @return 사용자 이름, 리뷰 내용, 평점, 생성일자, 리뷰 총 갯수, 페이지, 사이즈
+   */
+  @GetMapping("/agents/{agentId}/reviews")
+  public ResponseEntity<?> getAgentReviews(@PathVariable Long agentId, AgentReviewGetRequest request) {
+    request.setAgentId(agentId);
+    Map<String, Object> response = agentService.getAgentReviewListWithPagination(request);
+    return ResponseEntity.ok(ApiResponse.success(response));
+  }
 
   // 중개인 리뷰 수정
 

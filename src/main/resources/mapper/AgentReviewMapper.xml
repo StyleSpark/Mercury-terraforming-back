@@ -28,4 +28,22 @@
         )
     </insert>
 
+    <select id="selectAgentReviews" parameterType="com.matdongsan.api.dto.agent.AgentReviewGetRequest" resultType="com.matdongsan.api.dto.agent.AgentReviewGetResponse">
+        SELECT u.name
+            ,ar.content
+            ,ar.rate
+            ,ar.created_at
+        FROM agent_reviews ar
+        INNER JOIN users u ON ar.user_id = u.id
+        WHERE ar.agent_id = #{agentId}
+        ORDER BY ar.created_at DESC
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="countAgentReviews" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM agent_reviews
+        WHERE agent_id = #{agentId}
+    </select>
+
 </mapper>

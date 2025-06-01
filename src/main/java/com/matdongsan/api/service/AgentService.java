@@ -110,4 +110,23 @@ public class AgentService {
     // 리뷰 작성
     agentReviewMapper.insertAgentReview(userId, agentId, request);
   }
+
+  /**
+   * 특정 중개인의 리뷰 목록 조회
+   * @param agentId 중개인 고유 id
+   * @param request agentId, 페이지, 사이즈
+   * @return 사용자 이름, 리뷰 내용, 평점, 생성일자, 리뷰 총 갯수, 페이지, 사이즈
+   */
+  public Map<String, Object> getAgentReviewListWithPagination(AgentReviewGetRequest request) {
+    List<AgentReviewGetResponse> agentReviews = agentReviewMapper.selectAgentReviews(request);
+    Integer total = agentReviewMapper.countAgentReviews(request);
+
+    return Map.of(
+            "agentReviews", agentReviews,
+            "total", total,
+            "page", request.getPage(),
+            "size", request.getSize()
+    );
+  }
+
 }
