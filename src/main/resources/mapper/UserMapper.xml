@@ -113,5 +113,13 @@
         )
     </select>
 
+    <!-- 중개인 검증 후, 중개인 관련 컬럼 값 변경 -->
+    <update id="updateAgentStatus" parameterType="java.lang.Long">
+        UPDATE users
+        SET is_agent = true
+        ,agent_verified = true
+        WHERE id = #{userId}
+    </update>
+
 
 </mapper>
