@@ -23,4 +23,6 @@ public interface PropertyMapper {
   int updateProperty(PropertyUpdateRequest request);
 
   List<Long> getFavoritePropertyIds(Long userId, List<Long> propertyIds);
+
+  List<PropertyVO> selectUserProperties(Long id);
 }

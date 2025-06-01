@@ -6,17 +6,23 @@ import com.matdongsan.api.dto.agent.AgentGetRequest;
 import com.matdongsan.api.dto.agent.AgentRegisterRequest;
 import com.matdongsan.api.dto.agent.AgentUpdateRequest;
 import com.matdongsan.api.dto.user.SocialLoginDto;
+import com.matdongsan.api.dto.user.UpdateUserDto;
 import com.matdongsan.api.dto.user.UserLoginDto;
 import com.matdongsan.api.dto.user.UserSignupDto;
+import com.matdongsan.api.security.UserRole;
 import com.matdongsan.api.service.AgentService;
 import com.matdongsan.api.service.SocialAuthService;
 import com.matdongsan.api.util.JwtUtil;
 import com.matdongsan.api.vo.AgentVO;
+import com.matdongsan.api.vo.PropertyVO;
 import com.matdongsan.api.vo.UserVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -47,7 +53,8 @@ public class UserController {
                     "id", user.getId(),
                     "email", user.getEmail(),
                     "name", user.getName(),
-                    "role", user.getRole()
+                    "role", user.getRole(),
+                    "provider", user.getProvider()
             )
     ));
   }
@@ -85,8 +92,55 @@ public class UserController {
     ));
   }
 
-  // 회원 프로필 조회
+  /**
+   * 닉네임 중복 여부 확인
+   *
+   * @param request
+   * @return
+   */
+  @PostMapping("/nickname-check")
+  public ResponseEntity<?> checkNickname(@RequestBody Map<String, String> request) {
+    String nickname = request.get("nickname");
+    boolean exists = service.existsByNickname(nickname);
+    return ResponseEntity.ok(Map.of("available", !exists));
+  }
 
+  /**
+   * 내 정보 조회
+   * @param user
+   * @return
+   */
+  @GetMapping("/my-page")
+  public ResponseEntity<?> getMyprofile(@AuthenticationPrincipal UserRole user) {
+    UserVO response = service.getUserDataByUserId(user);
+    return ResponseEntity.ok(ApiResponse.success(response));
+  }
+
+  /**
+   * 내 정보 수정
+   * @param user
+   * @param request
+   * @param file
+   * @return
+   */
+  @PutMapping("/my-page")
+  public ResponseEntity<?> updateUserProfile(
+          @AuthenticationPrincipal UserRole user,
+          @RequestPart("user") UpdateUserDto request,
+          @RequestPart(value = "file", required = false) MultipartFile file
+  ) {
+    request.setId(user.getId());
+    if (file != null && !file.isEmpty()) {
+      request.setImage(file);
+    }
+    return ResponseEntity.ok(service.updateProfile(request));
+  }
+
+  @GetMapping("/properties")
+  public ResponseEntity<?> getPropertiesByUser(@AuthenticationPrincipal UserRole user) {
+    List<PropertyVO> response = service.getPropertiesByUser(user.getId());
+  return ResponseEntity.ok(ApiResponse.success(response));
+  }
   // 대리인 등록 신청
 
   /**

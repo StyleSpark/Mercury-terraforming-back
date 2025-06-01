@@ -15,4 +15,8 @@ public class UserVO {
   private String role;        // 기본값: "USER"
   private LocalDateTime createdAt;
   private String provider;
+  private Integer ticket; // 등록권 개수
+  private String profile; // 프로필
+  private String nickname;
+  private String temperature;
 }

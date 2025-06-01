@@ -30,7 +30,6 @@ public class PropertyVO {
   private Integer propertyTypeId;
   private Integer roomCount;
   private Integer bathroomCount;
-
   private List<String> imageUrls;
   private PropertyDetailVO detail;
 

@@ -59,12 +59,49 @@
         )
     </select>
 
-    <!-- 중개인 검증 후, 중개인 관련 컬럼 값 변경 -->
-    <update id="updateAgentStatus" parameterType="java.lang.Long">
+    <select id="existsByNickname" parameterType="string" resultType="boolean">
+        SELECT EXISTS (
+        SELECT 1
+        FROM users
+        WHERE nickname = #{nickname}
+        )
+    </select>
+
+    <select id="selectUserDataById" parameterType="long" resultType="user">
+        SELECT
+        u.phone,
+        u.temperature,
+        u.profile,
+        u.nickname,
+        COALESCE(SUM(pt.remain_count), 0) AS ticket
+        FROM users u
+        LEFT JOIN purchase_ticket pt ON pt.user_id = u.id
+        WHERE u.id = #{id}
+        GROUP BY u.phone, u.temperature, u.profile, u.nickname
+    </select>
+
+    <select id="selectUserProfile" parameterType="long" resultType="string" >
+        SELECT profile FROM users WHERE id = #{id}
+    </select>
+
+    <update id="updateUserProfile" parameterType="com.matdongsan.api.dto.user.UpdateUserDto">
         UPDATE users
-        SET is_agent = true
-            ,agent_verified = true
-        WHERE id = #{userId}
+        <set>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="nickname != null and nickname != ''">
+                nickname = #{nickname},
+            </if>
+            <if test="phone != null and phone != ''">
+                phone = #{phone},
+            </if>
+            <if test="profile != null and profile != ''">
+                profile = #{profile},
+            </if>
+        </set>
+        WHERE id = #{id}
     </update>
-    
+
+
 </mapper>

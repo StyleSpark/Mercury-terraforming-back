@@ -6,17 +6,23 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.matdongsan.api.dto.user.SocialUser;
+import com.matdongsan.api.dto.user.UpdateUserDto;
 import com.matdongsan.api.dto.user.UserSignupDto;
+import com.matdongsan.api.mapper.PropertyMapper;
 import com.matdongsan.api.mapper.UserMapper;
+import com.matdongsan.api.security.UserRole;
 import com.matdongsan.api.util.JwtUtil;
+import com.matdongsan.api.vo.PropertyVO;
 import com.matdongsan.api.vo.UserVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Collections;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -24,8 +30,13 @@ import java.util.Collections;
 public class SocialAuthService {
 
   private final UserMapper mapper;
+  private final PropertyMapper propertyMapper;
   private final JwtUtil jwtUtil;
   private final PasswordEncoder passwordEncoder;
+
+  private final S3Service s3Service;
+
+  private final ImageConversionService imageConversionService;
 
   @Value("${security.google.client-id}")
   private String googleClientId;
@@ -101,5 +112,45 @@ public class SocialAuthService {
       throw new IllegalArgumentException("이메일 또는 비밀번호가 올바르지 않습니다.");
     }
     return user;
+  }
+
+  public boolean existsByNickname(String nickname) {
+    return mapper.existsByNickname(nickname);
+  }
+
+  public UserVO getUserDataByUserId(UserRole user) {
+    return mapper.selectUserDataById(user.getId());
+  }
+
+  public int updateProfile(UpdateUserDto request) {
+    try {
+      MultipartFile newImage = request.getImage();
+
+      // ✅ 새 이미지가 있는 경우에만 처리
+      if (newImage != null && !newImage.isEmpty()) {
+        // 기존 이미지 삭제
+        String oldProfile = mapper.selectUserProfile(request.getId());
+        if (oldProfile != null && !oldProfile.isBlank()) {
+          s3Service.deleteByUrl(oldProfile);
+        }
+
+        // 새 이미지 업로드
+        byte[] webpProfile = imageConversionService.convertToWebP(newImage);
+        String key = "properties/temp_" + System.currentTimeMillis() + "_thumb.webp";
+        String newUrl = s3Service.uploadBytes(key, webpProfile, "image/webp");
+        request.setProfile(newUrl);
+      }
+
+      // ✅ DB 업데이트 실행
+      return mapper.updateUserProfile(request);
+
+    } catch (Exception e) {
+      throw new RuntimeException("프로필 업데이트 실패", e);
+    }
+  }
+
+
+  public List<PropertyVO> getPropertiesByUser(Long id) {
+    return propertyMapper.selectUserProperties(id);
   }
 }

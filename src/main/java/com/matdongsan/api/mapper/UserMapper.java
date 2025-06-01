@@ -1,5 +1,6 @@
 package com.matdongsan.api.mapper;
 
+import com.matdongsan.api.dto.user.UpdateUserDto;
 import com.matdongsan.api.vo.UserVO;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -18,4 +19,12 @@ public interface UserMapper {
   void insertUserWithPassword(UserVO user);
 
   void updateAgentStatus(Long userId);
+
+  boolean existsByNickname(String nickname);
+
+  UserVO selectUserDataById(Long id);
+
+  String selectUserProfile(Long id);
+
+  int updateUserProfile(UpdateUserDto request);
 }

@@ -162,4 +162,11 @@
         WHERE id = #{propertyId}
         AND deleted_at IS NULL
     </update>
+
+    <select id="selectUserProperties" parameterType="long" resultType="com.matdongsan.api.vo.PropertyVO">
+        SELECT id,title,category,price,deposit,rental_fee,floor_type,floor,maintenance_fee,thumbnail_url,status,address,hit_count
+        FROM properties
+        WHERE user_id = #{id}
+        ORDER BY created_at DESC;
+    </select>
 </mapper>
