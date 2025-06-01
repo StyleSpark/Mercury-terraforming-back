@@ -1,10 +1,7 @@
 package com.matdongsan.api.controller;
 
 import com.matdongsan.api.dto.ApiResponse;
-import com.matdongsan.api.dto.agent.AgentDeleteRequest;
-import com.matdongsan.api.dto.agent.AgentGetRequest;
-import com.matdongsan.api.dto.agent.AgentRegisterRequest;
-import com.matdongsan.api.dto.agent.AgentUpdateRequest;
+import com.matdongsan.api.dto.agent.*;
 import com.matdongsan.api.dto.user.SocialLoginDto;
 import com.matdongsan.api.dto.user.UpdateUserDto;
 import com.matdongsan.api.dto.user.UserLoginDto;
@@ -200,8 +197,18 @@ public class UserController {
     return ResponseEntity.ok(ApiResponse.success("중개인 정보가 수정되었습니다."));
   }
 
-
-  // 중개인 리뷰 작성
+  /**
+   * 중개인 리뷰 작성
+   * @param agentId 중개인 고유 id
+   * @param request AgentReviewCreateRequest (매물 id, 리뷰 내용, 평점)
+   * @return 리뷰 작성 성공 여부
+   */
+  @PostMapping("/agents/{agentId}/reviews")
+  public ResponseEntity<?> createReview(@PathVariable Long agentId, @RequestBody AgentReviewCreateRequest request) {
+    Long userId = 24L; // TODO: 로그인 사용자 인증 구현 후 수정
+    agentService.createReview(agentId, userId, request);
+    return ResponseEntity.ok(ApiResponse.success("중개인에 대한 리뷰가 작성되었습니다."));
+  }
 
   // 중개인 리뷰 조회
 

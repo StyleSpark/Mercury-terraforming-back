@@ -27,4 +27,6 @@ public interface UserMapper {
   String selectUserProfile(Long id);
 
   int updateUserProfile(UpdateUserDto request);
+
+  boolean checkNotAgent(Long userId);
 }

@@ -16,4 +16,18 @@
          WHERE reserved_date = #{reservedDate}
           AND property_id = #{propertyId}
     </select>
+
+    <select id="existsCompletedReservation" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1
+            FROM reservations r
+            INNER JOIN properties p
+                    ON r.property_id = p.id
+            WHERE r.user_id = #{userId}
+            AND p.user_id = #{agentId}
+            AND r.property_id = #{propertyId}
+            AND r.status = 'COMPLETED'
+        )
+    </select>
+
 </mapper>

@@ -3,6 +3,8 @@ package com.matdongsan.api.service;
 import com.matdongsan.api.dto.agent.*;
 import com.matdongsan.api.external.agent.verifier.AgentLicenseVerifier;
 import com.matdongsan.api.mapper.AgentMapper;
+import com.matdongsan.api.mapper.AgentReviewMapper;
+import com.matdongsan.api.mapper.ReservationMapper;
 import com.matdongsan.api.mapper.UserMapper;
 import com.matdongsan.api.vo.AgentVO;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,8 @@ public class AgentService {
   private final AgentMapper agentMapper;
   private final UserMapper userMapper;
   private final AgentLicenseVerifier licenseVerifier;
+  private final ReservationMapper reservationMapper;
+  private final AgentReviewMapper agentReviewMapper;
 
   /**
    * 중개인 단일 조회
@@ -85,5 +89,25 @@ public class AgentService {
    */
   public void updateAgent(AgentUpdateRequest request, Long userId) {
     agentMapper.updateAgent(request, userId);
+  }
+
+  /**
+   * 중개인 리뷰 작성
+   * @param agentId '중개인' 고유 id
+   * @param userId  로그인한 '회원' 고유 id
+   * @param request AgentReviewCreateRequest (매물 id, 리뷰 내용, 평점)
+   */
+  public void createReview(Long agentId, Long userId, AgentReviewCreateRequest request) {
+    // '회원'만이 '중개인'에게 리뷰를 작성할 수 있어야 함.
+    boolean isNotAgent = userMapper.checkNotAgent(userId);
+
+    // '회원'이 '중개인'과 거래 기록이 있는 경우를 확인 (현재로써는 예약이 이행되었는지로 확인)
+    boolean hasReservation = reservationMapper.existsCompletedReservation(userId, agentId, request.getPropertyId());
+
+    // '회원'은 '중개인'에게 하나의 리뷰만 작성이 가능해야 함.
+    boolean existsReview = agentReviewMapper.existsByUserByAgent(userId, agentId);
+
+    // 리뷰 작성
+    agentReviewMapper.insertAgentReview(userId, agentId, request);
   }
 }
