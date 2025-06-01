@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
@@ -34,7 +35,7 @@ public class S3Service {
     return getFileUrl(keyName);
   }
 
-  // ✅ 새로 추가할 바이트 배열 업로드 메서드
+  // 새로 추가할 바이트 배열 업로드 메서드
   public String uploadBytes(String keyName, byte[] bytes, String contentType) {
     PutObjectRequest putObjectRequest = PutObjectRequest.builder()
             .bucket(bucket)
@@ -48,6 +49,24 @@ public class S3Service {
 
   public String getFileUrl(String keyName) {
     return String.format("https://%s.s3.%s.amazonaws.com/%s", bucket, region, keyName);
+  }
+
+  public void deleteByUrl(String url) {
+    String prefix = String.format("https://%s.s3.%s.amazonaws.com/", bucket, region);
+    if (!url.startsWith(prefix)) {
+      throw new IllegalArgumentException("Invalid S3 URL format");
+    }
+    String key = url.substring(prefix.length());
+    delete(key); // 기존 메서드 재사용
+  }
+
+  public void delete(String keyName) {
+    DeleteObjectRequest deleteRequest = DeleteObjectRequest.builder()
+            .bucket(bucket)
+            .key(keyName)
+            .build();
+
+    s3Client.deleteObject(deleteRequest);
   }
 }
 
