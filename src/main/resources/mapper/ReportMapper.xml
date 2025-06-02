@@ -19,4 +19,23 @@
         )
     </insert>
 
+    <select id="selectReports" resultType="com.matdongsan.api.dto.agent.AgentReportGetResponse">
+        SELECT u.name AS agentName
+               ,r.target_type
+               ,r.content
+               ,r.created_at
+         FROM reports r
+        INNER JOIN users u ON r.target_id = u.id
+        WHERE r.reporter_id = #{userId}
+        ORDER BY created_at DESC
+        LIMIT #{size}
+       OFFSET #{offset}
+    </select>
+
+    <select id="countReports" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+          FROM reports
+         WHERE reporter_id = #{userId}
+    </select>
+
 </mapper>

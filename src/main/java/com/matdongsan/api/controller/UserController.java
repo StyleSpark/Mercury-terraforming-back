@@ -272,10 +272,21 @@ public class UserController {
     return ResponseEntity.ok(ApiResponse.success("중개인 신고가 완료되었습니다."));
   }
 
+  /**
+   * 로그인 사용자가 신고한 중개인 목록 조회
+   * @param request 로그인 유저 id, 페이지, 사이즈,
+   * @return 중개인 이름, 신고 유형, 신고 내용, 생성일자 Map
+   */
+  @GetMapping("/agents/reports/me")
+  public ResponseEntity<?> getAgentReports(AgentReportGetRequest request) {
+    // TODO: 로그인 사용자 인증 구현 후 수정
+    Long userId = 24L;
+    request.setUserId(userId);
+    Map<String, Object> response = reportService.getAgentReports(request);
+    return ResponseEntity.ok(ApiResponse.success(response));
+  }
 
-  // 내가 신고한 내역 조회
-
-  // 특정 중개인에 대한 신고 목록 (관리자)
+  // TODO: 특정 중개인에 대한 신고 목록 (관리자)
 
   // 중개인 채팅
 }
