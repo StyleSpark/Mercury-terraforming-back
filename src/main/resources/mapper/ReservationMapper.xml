@@ -30,4 +30,15 @@
         )
     </select>
 
+    <select id="existsReservation" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1
+              FROM reservations r
+        INNER JOIN properties p
+                ON r.property_id = p.id
+             WHERE r.user_id = #{userId}
+               AND p.user_id = #{targetId}
+        )
+    </select>
+
 </mapper>

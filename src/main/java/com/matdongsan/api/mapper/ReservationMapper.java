@@ -1,5 +1,6 @@
 package com.matdongsan.api.mapper;
 
+import com.matdongsan.api.dto.agent.AgentReportCreateRequest;
 import com.matdongsan.api.dto.agent.AgentReviewCreateRequest;
 import com.matdongsan.api.dto.reservation.ReservationCreateDto;
 import com.matdongsan.api.dto.reservation.ReservationGetDto;
@@ -19,4 +20,6 @@ public interface ReservationMapper {
   List<ReservedTimeVO> selectReservationTimesByDate(ReservationTimeGetDto request);
 
   boolean existsCompletedReservation(AgentReviewCreateRequest request);
+
+  boolean existsReservation(AgentReportCreateRequest request);
 }

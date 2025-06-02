@@ -8,6 +8,7 @@ import com.matdongsan.api.dto.user.UserLoginDto;
 import com.matdongsan.api.dto.user.UserSignupDto;
 import com.matdongsan.api.security.UserRole;
 import com.matdongsan.api.service.AgentService;
+import com.matdongsan.api.service.ReportService;
 import com.matdongsan.api.service.SocialAuthService;
 import com.matdongsan.api.util.JwtUtil;
 import com.matdongsan.api.vo.AgentVO;
@@ -30,6 +31,7 @@ public class UserController {
   private final SocialAuthService service;
   private final JwtUtil jwtUtil;
   private final AgentService agentService;
+  private final ReportService reportService;
 
   //소셜 로그인
 
@@ -254,7 +256,26 @@ public class UserController {
     return ResponseEntity.ok(ApiResponse.success("중개인 리뷰가 삭제되었습니다."));
   }
 
-  // 중개인 신고
+  /**
+   * 중개인 신고
+   * @param agentId 중개인 id
+   * @param request 로그인 사용자 id, 신고 유형, 중개인 id, 신고 내용
+   * @return 중개인 신고 성공 여부
+   */
+  @PostMapping("/agents/{agentId}/reports")
+  public ResponseEntity<?> createAgentReport(@PathVariable Long agentId, @RequestBody AgentReportCreateRequest request) {
+    // TODO: 로그인 사용자 인증 구현 후 수정
+    Long userId = 24L;
+    request.setUserId(userId);
+    request.setTargetId(agentId);
+    reportService.createAgentReport(request);
+    return ResponseEntity.ok(ApiResponse.success("중개인 신고가 완료되었습니다."));
+  }
+
+
+  // 내가 신고한 내역 조회
+
+  // 특정 중개인에 대한 신고 목록 (관리자)
 
   // 중개인 채팅
 }
