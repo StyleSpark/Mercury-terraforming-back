@@ -30,37 +30,48 @@
 
     <select id="selectAgentReviews" parameterType="com.matdongsan.api.dto.agent.AgentReviewGetRequest" resultType="com.matdongsan.api.dto.agent.AgentReviewGetResponse">
         SELECT u.name
-            ,ar.content
-            ,ar.rate
-            ,ar.created_at
-        FROM agent_reviews ar
-        INNER JOIN users u ON ar.user_id = u.id
-        WHERE ar.agent_id = #{agentId}
-        ORDER BY ar.created_at DESC
-        LIMIT #{size} OFFSET #{offset}
+               ,ar.content
+               ,ar.rate
+               ,ar.created_at
+          FROM agent_reviews ar
+    INNER JOIN users u ON ar.user_id = u.id
+         WHERE ar.agent_id = #{agentId}
+      ORDER BY ar.created_at DESC
+         LIMIT #{size}
+        OFFSET #{offset}
     </select>
 
     <select id="countAgentReviews" resultType="java.lang.Integer">
         SELECT COUNT(*)
-        FROM agent_reviews
-        WHERE agent_id = #{agentId}
+          FROM agent_reviews
+         WHERE agent_id = #{agentId}
+           AND deleted_at IS NULL
     </select>
 
     <select id="existsByReviewByUser" parameterType="com.matdongsan.api.dto.agent.AgentReviewUpdateRequest" resultType="boolean">
         SELECT EXISTS (
             SELECT 1
-            FROM agent_reviews
-            WHERE id = #{reviewId}
-            AND user_id = #{userId}
+              FROM agent_reviews
+             WHERE id = #{reviewId}
+               AND user_id = #{userId}
+               AND deleted_at IS NULL
         )
     </select>
 
     <update id="updateReview" parameterType="com.matdongsan.api.dto.agent.AgentReviewUpdateRequest">
         UPDATE agent_reviews
-        SET content = #{content}
-        ,rate = #{rate}
-        WHERE id = #{reviewId}
-        AND user_id = #{userId}
+           SET content = #{content}
+               ,rate = #{rate}
+               ,updated_at = NOW()
+         WHERE id = #{reviewId}
+           AND user_id = #{userId}
+    </update>
+
+    <update id="softDeleteAgentReview">
+        UPDATE agent_reviews
+           SET deleted_at = NOW()
+         WHERE id = #{reviewId}
+           AND user_id = #{userId}
     </update>
 
 </mapper>

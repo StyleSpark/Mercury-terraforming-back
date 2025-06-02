@@ -241,7 +241,18 @@ public class UserController {
     return ResponseEntity.ok(ApiResponse.success("중개인 리뷰가 수정되었습니다."));
   }
 
-  // 중개인 리뷰 삭제
+  /**
+   * 중개인 리뷰 삭제
+   * @param reviewId 중개인 리뷰 id
+   * @return 중개인 리뷰 삭제 성공 여부
+   */
+  @DeleteMapping("/agents/reviews/{reviewId}")
+  public ResponseEntity<?> deleteAgentReview(@PathVariable Long reviewId) {
+    // TODO: 로그인 사용자 인증 구현 후 수정
+    Long userId = 24L;
+    agentService.deleteAgentReview(reviewId, userId);
+    return ResponseEntity.ok(ApiResponse.success("중개인 리뷰가 삭제되었습니다."));
+  }
 
   // 중개인 신고
 

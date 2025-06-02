@@ -137,4 +137,13 @@ public class AgentService {
     // 리뷰 수정
     agentReviewMapper.updateReview(request);
   }
+
+  /**
+   * 중개인 리뷰 삭제
+   * @param reviewId 중개인 리뷰 id
+   * @param userId 로그인 사용자 id
+   */
+  public void deleteAgentReview(Long reviewId, Long userId) {
+    agentReviewMapper.softDeleteAgentReview(reviewId, userId);
+  }
 }

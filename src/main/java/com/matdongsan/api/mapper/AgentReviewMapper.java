@@ -21,4 +21,6 @@ public interface AgentReviewMapper {
   boolean existsByReviewByUser(AgentReviewUpdateRequest request);
 
   void updateReview(AgentReviewUpdateRequest request);
+
+  void softDeleteAgentReview(Long reviewId, Long userId);
 }
