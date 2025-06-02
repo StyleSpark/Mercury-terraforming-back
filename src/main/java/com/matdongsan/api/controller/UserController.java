@@ -205,12 +205,12 @@ public class UserController {
    */
   @PostMapping("/agents/{agentId}/reviews")
   public ResponseEntity<?> createReview(@PathVariable Long agentId, @RequestBody AgentReviewCreateRequest request) {
-    Long userId = 24L; // TODO: 로그인 사용자 인증 구현 후 수정
-    agentService.createReview(agentId, userId, request);
+    // TODO: 로그인 사용자 인증 구현 후 수정
+    request.setUserId(24L);
+    request.setAgentId(agentId);
+    agentService.createReview(request);
     return ResponseEntity.ok(ApiResponse.success("중개인에 대한 리뷰가 작성되었습니다."));
   }
-
-  // 중개인 리뷰 목록 조회
 
   /**
    * 특정 중개인의 리뷰 목록 조회
@@ -220,12 +220,26 @@ public class UserController {
    */
   @GetMapping("/agents/{agentId}/reviews")
   public ResponseEntity<?> getAgentReviews(@PathVariable Long agentId, AgentReviewGetRequest request) {
+    // TODO: 로그인 사용자 인증 구현 후 수정
     request.setAgentId(agentId);
     Map<String, Object> response = agentService.getAgentReviewListWithPagination(request);
     return ResponseEntity.ok(ApiResponse.success(response));
   }
 
-  // 중개인 리뷰 수정
+  /**
+   * 중개인 리뷰 수정
+   * @param reviewId 중개인 리뷰 id
+   * @param request 리뷰 내용, 점수
+   * @return 리뷰 수정 성공 여부
+   */
+  @PatchMapping("/agents/reviews/{reviewId}")
+  public ResponseEntity<?> updateAgentReview(@PathVariable Long reviewId, @RequestBody AgentReviewUpdateRequest request) {
+    // TODO: 로그인 사용자 인증 구현 후 수정
+    request.setReviewId(reviewId);
+    request.setUserId(24L);
+    agentService.updateAgentReview(request);
+    return ResponseEntity.ok(ApiResponse.success("중개인 리뷰가 수정되었습니다."));
+  }
 
   // 중개인 리뷰 삭제
 

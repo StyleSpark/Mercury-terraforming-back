@@ -3,6 +3,7 @@ package com.matdongsan.api.mapper;
 import com.matdongsan.api.dto.agent.AgentReviewCreateRequest;
 import com.matdongsan.api.dto.agent.AgentReviewGetRequest;
 import com.matdongsan.api.dto.agent.AgentReviewGetResponse;
+import com.matdongsan.api.dto.agent.AgentReviewUpdateRequest;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
@@ -11,9 +12,13 @@ import java.util.List;
 public interface AgentReviewMapper {
   boolean existsByUserByAgent(Long userId, Long agentId);
 
-  void insertAgentReview(Long userId, Long agentId, AgentReviewCreateRequest request);
+  void insertAgentReview(AgentReviewCreateRequest request);
 
   List<AgentReviewGetResponse> selectAgentReviews(AgentReviewGetRequest request);
 
   Integer countAgentReviews(AgentReviewGetRequest request);
+
+  boolean existsByReviewByUser(AgentReviewUpdateRequest request);
+
+  void updateReview(AgentReviewUpdateRequest request);
 }

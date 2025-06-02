@@ -5,10 +5,9 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class AgentReviewCreateRequest {
+public class AgentReviewUpdateRequest {
+  private Long reviewId;
   private Long userId;
-  private Long agentId;
-  private Long propertyId;
   private String content;
   private Integer rate;
 }

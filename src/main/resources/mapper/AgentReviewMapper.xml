@@ -22,8 +22,8 @@
         VALUES (
             #{agentId}
             ,#{userId}
-            ,#{request.content}
-            ,#{request.rate}
+            ,#{content}
+            ,#{rate}
             ,NOW()
         )
     </insert>
@@ -45,5 +45,22 @@
         FROM agent_reviews
         WHERE agent_id = #{agentId}
     </select>
+
+    <select id="existsByReviewByUser" parameterType="com.matdongsan.api.dto.agent.AgentReviewUpdateRequest" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1
+            FROM agent_reviews
+            WHERE id = #{reviewId}
+            AND user_id = #{userId}
+        )
+    </select>
+
+    <update id="updateReview" parameterType="com.matdongsan.api.dto.agent.AgentReviewUpdateRequest">
+        UPDATE agent_reviews
+        SET content = #{content}
+        ,rate = #{rate}
+        WHERE id = #{reviewId}
+        AND user_id = #{userId}
+    </update>
 
 </mapper>

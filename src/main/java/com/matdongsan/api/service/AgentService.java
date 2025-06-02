@@ -93,28 +93,25 @@ public class AgentService {
 
   /**
    * 중개인 리뷰 작성
-   * @param agentId '중개인' 고유 id
-   * @param userId  로그인한 '회원' 고유 id
-   * @param request AgentReviewCreateRequest (매물 id, 리뷰 내용, 평점)
+   * @param request AgentReviewCreateRequest ('중개인' 고유 id, 로그인한 '회원' 고유 id, 매물 id, 리뷰 내용, 평점)
    */
-  public void createReview(Long agentId, Long userId, AgentReviewCreateRequest request) {
+  public void createReview(AgentReviewCreateRequest request) {
     // '회원'만이 '중개인'에게 리뷰를 작성할 수 있어야 함.
-    boolean isNotAgent = userMapper.checkNotAgent(userId);
+    boolean isNotAgent = userMapper.checkNotAgent(request.getUserId());
 
     // '회원'이 '중개인'과 거래 기록이 있는 경우를 확인 (현재로써는 예약이 이행되었는지로 확인)
-    boolean hasReservation = reservationMapper.existsCompletedReservation(userId, agentId, request.getPropertyId());
+    boolean hasReservation = reservationMapper.existsCompletedReservation(request);
 
     // '회원'은 '중개인'에게 하나의 리뷰만 작성이 가능해야 함.
-    boolean existsReview = agentReviewMapper.existsByUserByAgent(userId, agentId);
+    boolean existsReview = agentReviewMapper.existsByUserByAgent(request.getUserId(), request.getAgentId());
 
     // 리뷰 작성
-    agentReviewMapper.insertAgentReview(userId, agentId, request);
+    agentReviewMapper.insertAgentReview(request);
   }
 
   /**
    * 특정 중개인의 리뷰 목록 조회
-   * @param agentId 중개인 고유 id
-   * @param request agentId, 페이지, 사이즈
+   * @param request 중개인 고유 id, 페이지, 사이즈
    * @return 사용자 이름, 리뷰 내용, 평점, 생성일자, 리뷰 총 갯수, 페이지, 사이즈
    */
   public Map<String, Object> getAgentReviewListWithPagination(AgentReviewGetRequest request) {
@@ -129,4 +126,15 @@ public class AgentService {
     );
   }
 
+  /**
+   * 중개인 리뷰 수정
+   * @param request 리뷰 id, 로그인 유저 id, 리뷰 내용, 점수
+   */
+  public void updateAgentReview(AgentReviewUpdateRequest request) {
+    // 해당 리뷰가 존재하고, 그 리뷰가 로그인한 유저가 쓴 것인지 확인
+    boolean existsReview = agentReviewMapper.existsByReviewByUser(request);
+
+    // 리뷰 수정
+    agentReviewMapper.updateReview(request);
+  }
 }
