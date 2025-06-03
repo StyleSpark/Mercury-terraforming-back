@@ -104,14 +104,16 @@
         created_at,
         remain_count,
         status
-        ) VALUES (
+        )
+        SELECT
         #{userId},
         #{orderId},
-        #{ticketId},
+        tm.id,
         NOW(),
-        '#{remainCount}',
+        tm.quantity,
         'ACTIVE'
-        )
+        FROM ticket_master tm
+        WHERE tm.id = #{ticketId}
     </insert>
 
     <select id="selectTicketInfoData" resultType="ticket">
@@ -138,8 +140,7 @@
         WHERE user_id = #{userId}
           AND remain_count > 0
           AND status = 'ACTIVE'
-          AND valid_until >= CURRENT_DATE
-     ORDER BY valid_until ASC
+     ORDER BY created_at ASC
         LIMIT 1
         )
     </update>

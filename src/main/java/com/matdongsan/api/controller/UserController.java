@@ -135,6 +135,12 @@ public class UserController {
     return ResponseEntity.ok(service.updateProfile(request));
   }
 
+  /**
+   * 마이페이지 - 매물 관리
+   * Todo: 검색, 필터 기능 추가 필요
+   * @param user
+   * @return
+   */
   @GetMapping("/properties")
   public ResponseEntity<?> getPropertiesByUser(@AuthenticationPrincipal UserRole user) {
     List<PropertyVO> response = service.getPropertiesByUser(user.getId());

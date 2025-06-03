@@ -104,7 +104,7 @@ public class PaymentService {
 
     request.setOrderId(generateOrderId());
 
-    String itemName = "ticket".equals(request.getTicketId()) ? "등록권" : "대리권";
+    String itemName = "reservation".equals(request.getTicketId()) ?  "대리권" : "등록권";
     request.setItemName(itemName);
 
     result += mapper.createTicketPaymentHistory(request); // 구매 기록 생성
