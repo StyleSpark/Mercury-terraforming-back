@@ -113,9 +113,9 @@
 
     <update id="softDeleteProperty" parameterType="com.matdongsan.api.dto.property.PropertyDeleteRequest">
         UPDATE properties
-           SET deleted_at = NOW(),
-         WHERE property_id = #{id}
-           AND deleted_at IS NOT null
+           SET deleted_at = NOW()
+         WHERE  id = #{id}
+           AND deleted_at IS null
            AND user_id = #{userId}
     </update>
 
@@ -167,6 +167,42 @@
         SELECT id,title,category,price,deposit,rental_fee,floor_type,floor,maintenance_fee,thumbnail_url,status,address,hit_count
         FROM properties
         WHERE user_id = #{id}
+          AND deleted_at is null
         ORDER BY created_at DESC;
+    </select>
+
+    <!-- 기존 태그 조회 -->
+    <select id="findTagsByNames" resultType="com.matdongsan.api.vo.Tag">
+        SELECT id, name FROM tags
+        WHERE name IN
+        <foreach item="name" collection="list" open="(" separator="," close=")">
+            #{name}
+        </foreach>
+    </select>
+
+    <!-- 태그 삽입, 중복 무시 -->
+    <insert id="insertIgnoreDuplicates">
+        INSERT INTO tags (name)
+        VALUES
+        <foreach item="name" collection="list" separator=",">
+            (#{name})
+        </foreach>
+        ON CONFLICT (name) DO NOTHING
+    </insert>
+
+
+    <insert id="bulkInsert">
+        INSERT INTO property_tags (property_id, tag_id)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.propertyId}, #{item.tagId})
+        </foreach>
+    </insert>
+
+    <select id="getTags" parameterType="long" resultType="com.matdongsan.api.vo.Tag">
+        SELECT t.id,t.name
+        FROM property_tags pt
+        JOIN tags t ON pt.tag_id = t.id
+        WHERE pt.property_id = #{id}
     </select>
 </mapper>

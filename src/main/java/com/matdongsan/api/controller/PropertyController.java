@@ -41,6 +41,7 @@ public class PropertyController {
     request.setImages(images);
     request.setUserId(user.getId());
     request.setThumbnail(thumbnail);
+    request.setStatus("ACTIVE");
     Long id = service.createProperty(request);
     return ResponseEntity.ok(ApiResponse.success(id));
   }
@@ -106,12 +107,12 @@ public class PropertyController {
    * @return
    */
   @DeleteMapping("/{id}")
-  public ResponseEntity<?> deleteProperty(@PathVariable Long id) {
+  public ResponseEntity<?> deleteProperty(@PathVariable Long id,@AuthenticationPrincipal UserRole user) {
     PropertyDeleteRequest request = new PropertyDeleteRequest();
     request.setId(id);
 
     // 사용자 id는 security 추가후 적용해야함
-    request.setUserId(1L);
+    request.setUserId(user.getId());
     boolean result = service.deleteProperty(request);
     return ResponseEntity.ok(ApiResponse.success(result));
   }

@@ -1,23 +1,20 @@
 package com.matdongsan.api.service;
 
-import com.matdongsan.api.dto.property.PropertyCreateRequest;
-import com.matdongsan.api.dto.property.PropertyDeleteRequest;
-import com.matdongsan.api.dto.property.PropertyGetRequest;
-import com.matdongsan.api.dto.property.PropertyUpdateRequest;
+import com.matdongsan.api.dto.property.*;
 import com.matdongsan.api.mapper.PaymentMapper;
 import com.matdongsan.api.mapper.PropertyDetailMapper;
 import com.matdongsan.api.mapper.PropertyImagesMapper;
 import com.matdongsan.api.mapper.PropertyMapper;
 import com.matdongsan.api.vo.PropertyDetailVO;
 import com.matdongsan.api.vo.PropertyVO;
+import com.matdongsan.api.vo.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 // TODO: optional 추가, s3 추가, exception 전역처리, 성능 추가 점검, 사용자 관련 체크
 
@@ -38,19 +35,16 @@ public class PropertyService {
 
   private final ImageConversionService imageConversionService;
 
+  @Transactional
   public Long createProperty(PropertyCreateRequest request) {
 
-    // 0. 등록권 체크
-    // 아래 코드는 기능적으로는 문제가 없지만 동시성 문제에서 취약한 문제를 가지고 있음
-    //boolean hasTicket = paymentMapper.checkTicketByUserId(request.getUserId());
-
+    // 0. 등록권 소비
     int updatedRows = paymentMapper.consumeTicket(request.getUserId());
-
     if (updatedRows != 1) {
-      throw new IllegalStateException ("등록권이 없습니다.");
+      throw new IllegalStateException("등록권이 없습니다.");
     }
 
-    //  1. 썸네일 이미지 업로드 먼저 수행 (ID 없음 → temp 이름)
+    // 1. 썸네일 업로드
     if (request.getThumbnail() != null && !request.getThumbnail().isEmpty()) {
       try {
         byte[] webpThumbnail = imageConversionService.convertToWebP(request.getThumbnail());
@@ -62,32 +56,59 @@ public class PropertyService {
       }
     }
 
-    // 2. DB에 매물 기본 정보 + 썸네일 URL 한 번에 insert
+    // 2. 매물 저장
     mapper.insertProperty(request);
     Long propertyId = request.getId();
     if (propertyId == null) throw new RuntimeException("매물 저장 실패");
 
-    // 3. 상세 정보 저장
+    // 3. 상세 저장
     request.getDetail().setPropertyId(propertyId);
     int detailResult = detailMapper.insertPropertyDetail(request.getDetail());
     if (detailResult != 1) throw new RuntimeException("상세 저장 실패");
 
-    // 4. 추가 이미지들 S3 업로드 및 DB 저장
+    // 4. 이미지 업로드 및 저장
     if (request.getImages() != null && !request.getImages().isEmpty()) {
       for (MultipartFile image : request.getImages()) {
         try {
           byte[] webpImage = imageConversionService.convertToWebP(image);
           String imageKey = "properties/" + propertyId + "_" + System.currentTimeMillis() + ".webp";
           String imageUrl = s3Service.uploadBytes(imageKey, webpImage, "image/webp");
-
           int result = imagesMapper.insertPropertyImage(propertyId, imageUrl);
           if (result != 1) throw new RuntimeException("이미지 저장 실패: " + imageUrl);
-
-          request.getImageUrls().add(imageUrl); // 리턴용
+          request.getImageUrls().add(imageUrl);
         } catch (Exception e) {
           throw new RuntimeException("이미지 업로드 실패", e);
         }
       }
+    }
+
+    // ✅ 5. 태그 저장 및 매핑
+    List<String> tagNames = request.getTags();
+    if (tagNames != null && !tagNames.isEmpty()) {
+      // 5-1. 기존 태그 조회
+      List<Tag> existingTags = mapper.findTagsByNames(tagNames);
+      Set<String> existingTagNames = existingTags.stream().map(Tag::getName).collect(Collectors.toSet());
+
+      // 5-2. 신규 태그 삽입
+      List<String> newTags = tagNames.stream()
+              .filter(name -> !existingTagNames.contains(name))
+              .toList();
+      if (!newTags.isEmpty()) {
+        mapper.insertIgnoreDuplicates(newTags);
+      }
+
+      // 5-3. 전체 태그 다시 조회 → ID 확보
+      List<Tag> allTags = mapper.findTagsByNames(tagNames);
+
+      // 5-4. property_tags 삽입
+      List<Map<String, Object>> propertyTagMappings = allTags.stream().map(tag -> {
+        Map<String, Object> map = new HashMap<>();
+        map.put("propertyId", propertyId);
+        map.put("tagId", tag.getId());
+        return map;
+      }).toList();
+
+      mapper.bulkInsert(propertyTagMappings);
     }
 
     return propertyId;
@@ -96,7 +117,12 @@ public class PropertyService {
 
   @Transactional(readOnly = true)
   public List<PropertyVO> getProperties(PropertyGetRequest request) {
-    return mapper.selectProperties(request);
+    List<PropertyVO> res = mapper.selectProperties(request);
+    for(PropertyVO vo : res) {
+      List<Tag> tags = mapper.getTags(vo);
+      vo.setTags(tags);
+    }
+    return res;
   }
 
   @Transactional(readOnly = true)
@@ -105,8 +131,12 @@ public class PropertyService {
     PropertyDetailVO detail = detailMapper.selectPropertyDetailByPropertyId(id);
     List<String> imageUrls = imagesMapper.selectImageUrlsByPropertyId(id);
 
+    // 태그 조회 (기존 getTags 재사용)
+    List<Tag> tags = mapper.getTags(property);
+
     property.setDetail(detail);
     property.setImageUrls(imageUrls);
+    property.setTags(tags); // ← 태그 설정
 
     return property;
   }

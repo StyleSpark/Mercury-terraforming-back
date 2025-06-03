@@ -27,7 +27,7 @@ public class PropertyVO {
   private BigDecimal latitude;
   private BigDecimal longitude;
   private Long hitCount;
-  private Integer propertyTypeId;
+  private String propertyTypeId;
   private Integer roomCount;
   private Integer bathroomCount;
   private List<String> imageUrls;
@@ -37,4 +37,5 @@ public class PropertyVO {
   private String profile;
 
   private Boolean isFavorite;
+  private List<Tag> tags;
 }

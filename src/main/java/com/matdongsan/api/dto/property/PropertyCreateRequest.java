@@ -32,6 +32,7 @@ public class PropertyCreateRequest {
   private Long hitCount;
   private Integer propertyTypeId;
   private List<String> tags;
+  private String type; // 매물 종류
 
   private MultipartFile thumbnail;
 
