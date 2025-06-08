@@ -4,38 +4,55 @@
 
     <insert id="insertAgentReport">
         INSERT INTO reports (
-            reporter_id
-            ,target_type
-            ,target_id
-            ,content
-            ,created_at
+        reporter_id
+        ,target_type
+        ,target_id
+        ,content
+        ,created_at
         )
         VALUES (
-            #{userId}
-            ,#{targetType}
-            ,#{targetId}
-            ,#{content}
-            ,NOW()
+        #{userId}
+        ,#{targetType}
+        ,#{targetId}
+        ,#{content}
+        ,NOW()
         )
     </insert>
 
     <select id="selectReports" resultType="com.matdongsan.api.dto.agent.AgentReportGetResponse">
         SELECT u.name AS agentName
-               ,r.target_type
-               ,r.content
-               ,r.created_at
-         FROM reports r
+        ,r.target_type
+        ,r.content
+        ,r.created_at
+        FROM reports r
         INNER JOIN users u ON r.target_id = u.id
         WHERE r.reporter_id = #{userId}
         ORDER BY created_at DESC
         LIMIT #{size}
-       OFFSET #{offset}
+        OFFSET #{offset}
     </select>
 
     <select id="countReports" resultType="java.lang.Integer">
         SELECT COUNT(*)
-          FROM reports
-         WHERE reporter_id = #{userId}
+        FROM reports
+        WHERE reporter_id = #{userId}
     </select>
 
+    <insert id="insertProrpertyReport" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO reports
+        (reporter_id,
+        target_type,
+        target_id,
+        content,
+        category,
+        created_at)
+        VALUES (#{userId}, #{targetType}, #{targetId}, #{content},#{category}, NOW())
+    </insert>
+
+    <select id="selectReportsByUser" resultType="com.matdongsan.api.vo.ReportVO">
+        SELECT id, target_type, target_id, content, created_at
+        FROM reports
+        WHERE reporter_id = #{userId}
+        ORDER BY created_at DESC
+    </select>
 </mapper>

@@ -3,8 +3,10 @@ package com.matdongsan.api.service;
 import com.matdongsan.api.dto.agent.AgentReportCreateRequest;
 import com.matdongsan.api.dto.agent.AgentReportGetRequest;
 import com.matdongsan.api.dto.agent.AgentReportGetResponse;
+import com.matdongsan.api.dto.report.ReportCreateDto;
 import com.matdongsan.api.mapper.ReportMapper;
 import com.matdongsan.api.mapper.ReservationMapper;
+import com.matdongsan.api.vo.ReportVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,7 +21,7 @@ import java.util.Map;
 @Slf4j
 public class ReportService {
 
-  private final ReportMapper reportMapper;
+  private final ReportMapper mapper;
   private final ReservationMapper reservationMapper;
 
   /**
@@ -31,7 +33,7 @@ public class ReportService {
     boolean hasReservation = reservationMapper.existsReservation(request);
 
     // 중개인 신고
-    reportMapper.insertAgentReport(request);
+    mapper.insertAgentReport(request);
   }
 
   /**
@@ -40,8 +42,8 @@ public class ReportService {
    * @return 중개인 이름, 신고 유형, 신고 내용, 생성일자 Map
    */
   public Map<String, Object> getAgentReports(AgentReportGetRequest request) {
-    List<AgentReportGetResponse> reports = reportMapper.selectReports(request);
-    Integer total = reportMapper.countReports(request);
+    List<AgentReportGetResponse> reports = mapper.selectReports(request);
+    Integer total = mapper.countReports(request);
 
     return Map.of(
             "reports", reports,
@@ -49,5 +51,23 @@ public class ReportService {
             "page", request.getPage(),
             "size", request.getSize()
     );
+  }
+
+  /**
+   * 매물 신고 생성
+   * @param request
+   * @return
+   */
+  public Long createReport(ReportCreateDto request) {
+    return mapper.insertProrpertyReport(request);
+  }
+
+  /**
+   * 매물 신고
+   * @param id 유저 id
+   * @return 신고데이터
+   */
+  public List<ReportVO> getReportsByUser(Long id) {
+    return mapper.selectReportsByUser(id);
   }
 }
