@@ -51,33 +51,51 @@
 
     <select id="selectProperties" parameterType="com.matdongsan.api.dto.property.PropertyGetRequest"
             resultType="com.matdongsan.api.vo.PropertyVO">
-        SELECT p.id
-              ,u.nickname
-              ,u.profile
-              ,p.title
-              ,p.category
-              ,p.price
-              ,p.deposit
-              ,p.rental_fee
-              ,p.floor_type
-              ,p.floor
-              ,p.room_size
-              ,p.maintenance_fee
-              ,p.thumbnail_url
-              ,p.status
-              ,p.address
-              ,p.address_detail
-              ,p.postcode
-              ,p.latitude
-              ,p.longitude
-              ,p.hit_count
-              ,p.property_type_id
-              ,p.room_count
-              ,p.bathroom_count
+        SELECT
+        p.id,
+        u.nickname,
+        u.profile,
+        p.title,
+        p.category,
+        p.price,
+        p.deposit,
+        p.rental_fee,
+        p.floor_type,
+        p.floor,
+        p.room_size,
+        p.maintenance_fee,
+        p.thumbnail_url,
+        p.status,
+        p.address,
+        p.address_detail,
+        p.postcode,
+        p.latitude,
+        p.longitude,
+        p.hit_count,
+        p.property_type_id,
+        p.room_count,
+        p.bathroom_count,
+
+        (6371 * acos(
+        cos(radians(#{latitude}))
+        * cos(radians(p.latitude))
+        * cos(radians(p.longitude) - radians(#{longitude}))
+        + sin(radians(#{latitude}))
+        * sin(radians(p.latitude))
+        )) AS distance
         FROM properties p
-        INNER JOIN users u
-                ON p.user_id = u.id
-        WHERE P.deleted_at IS null
+        INNER JOIN users u ON p.user_id = u.id
+        WHERE p.deleted_at IS NULL
+        <if test="latitude != null and longitude != null and radius != null">
+            AND (6371 * acos(
+            cos(radians(#{latitude}))
+            * cos(radians(p.latitude))
+            * cos(radians(p.longitude) - radians(#{longitude}))
+            + sin(radians(#{latitude}))
+            * sin(radians(p.latitude))
+            )) &lt;= #{radius}
+        </if>
+        ORDER BY p.id DESC
     </select>
 
     <select id="selectPropertyById" parameterType="java.lang.Long" resultType="com.matdongsan.api.vo.PropertyVO">
@@ -164,7 +182,7 @@
     </update>
 
     <select id="selectUserProperties" parameterType="long" resultType="com.matdongsan.api.vo.PropertyVO">
-        SELECT id,title,category,price,deposit,rental_fee,floor_type,floor,maintenance_fee,thumbnail_url,status,address,hit_count
+        SELECT id,title,category,price,deposit,rental_fee,floor_type,floor,maintenance_fee,thumbnail_url,status,address,hit_count,property_type_id
         FROM properties
         WHERE user_id = #{id}
           AND deleted_at is null
@@ -204,5 +222,61 @@
         FROM property_tags pt
         JOIN tags t ON pt.tag_id = t.id
         WHERE pt.property_id = #{id}
+    </select>
+
+    <select id="checkPropertyByUserId" parameterType="com.matdongsan.api.dto.property.PropertyUpdateRequest" resultType="boolean">
+        SELECT EXISTS (
+        SELECT 1
+        FROM properties
+        WHERE id = #{id}
+        AND user_id = #{userId}
+        )
+    </select>
+
+    <delete id="deletePropertyTags">
+        DELETE FROM property_tags
+        WHERE property_id = #{propertyId}
+        AND tag_id IN
+        <foreach collection="toRemove" item="tagId" open="(" separator="," close=")">
+            #{tagId}
+        </foreach>
+    </delete>
+
+    <select id="getTagsByPropertyId" resultType="Tag">
+        SELECT t.id, t.name
+        FROM tags t
+        JOIN property_tags pt ON t.id = pt.tag_id
+        WHERE pt.property_id = #{propertyId}
+    </select>
+
+    <select id="selectPropertiesWithinBounds" parameterType="com.matdongsan.api.dto.property.MapBoundsRequestDto" resultType="com.matdongsan.api.vo.PropertyVO">
+        SELECT p.id
+            ,u.nickname
+            ,u.profile
+            ,p.title
+            ,p.category
+            ,p.price
+            ,p.deposit
+            ,p.rental_fee
+            ,p.floor_type
+            ,p.floor
+            ,p.room_size
+            ,p.maintenance_fee
+            ,p.thumbnail_url
+            ,p.status
+            ,p.address
+            ,p.address_detail
+            ,p.postcode
+            ,p.latitude
+            ,p.longitude
+            ,p.hit_count
+            ,p.property_type_id
+            ,p.room_count
+            ,p.bathroom_count
+        FROM properties p
+        INNER JOIN users u ON p.user_id = u.id
+        WHERE latitude BETWEEN #{swLat} AND #{neLat}
+        AND longitude BETWEEN #{swLng} AND #{neLng}
+        AND P.deleted_at IS NULL
     </select>
 </mapper>

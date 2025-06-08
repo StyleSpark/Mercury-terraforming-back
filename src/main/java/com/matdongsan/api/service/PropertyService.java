@@ -118,7 +118,7 @@ public class PropertyService {
   @Transactional(readOnly = true)
   public List<PropertyVO> getProperties(PropertyGetRequest request) {
     List<PropertyVO> res = mapper.selectProperties(request);
-    for(PropertyVO vo : res) {
+    for (PropertyVO vo : res) {
       List<Tag> tags = mapper.getTags(vo);
       vo.setTags(tags);
     }
@@ -155,30 +155,121 @@ public class PropertyService {
   }
 
   public PropertyVO updateProperty(PropertyUpdateRequest request) {
+    // 등록자가 올린게 맞는지 확인 필요
+    boolean isOwner = mapper.checkPropertyByUserId(request);
+    if (!isOwner) {
+      //에러
+    }
     Long propertyId = request.getId();
-
-    // 1. property 업데이트
+    //썸네일 업데이트
+    if (request.getThumbnail() != null && !request.getThumbnail().isEmpty()) {
+      // 기존 썸네일 삭제 -> 새로운 썸네일 변환 -> url request에 set
+      s3Service.deleteByUrl(request.getThumbnailUrl());
+      try {
+        byte[] webpThumbnail = imageConversionService.convertToWebP(request.getThumbnail());
+        String thumbKey = "properties/temp_" + System.currentTimeMillis() + "_thumb.webp";
+        String thumbnailUrl = s3Service.uploadBytes(thumbKey, webpThumbnail, "image/webp");
+        request.setThumbnailUrl(thumbnailUrl);
+      } catch (Exception e) {
+        throw new RuntimeException("썸네일 업로드 실패", e);
+      }
+    }
+    // property 업데이트
     int updated = mapper.updateProperty(request);
     if (updated != 1) throw new RuntimeException("매물 업데이트 실패");
 
-    // 2. property_detail 업데이트
+    // property_detail 업데이트
     request.getDetail().setPropertyId(propertyId);
     int detailUpdated = detailMapper.updatePropertyDetail(request.getDetail());
     if (detailUpdated != 1) throw new RuntimeException("상세 정보 업데이트 실패");
 
-    // 3. 기존 이미지 soft delete
-//    int imageDeleted = imagesMapper.softDeletePropertyImagesByPropertyId(propertyId);
-//    if (imageDeleted < 0) throw new RuntimeException("기존 이미지 삭제 실패");
 
-    // 4. 새 이미지 삽입
-    if (request.getImageUrls() != null) {
-      for (String imageUrl : request.getImageUrls()) {
-        int inserted = imagesMapper.insertPropertyImage(propertyId, imageUrl);
-        if (inserted != 1) throw new RuntimeException("새 이미지 삽입 실패: " + imageUrl);
+// 기존 DB 이미지 목록 조회
+    List<String> dbImageUrls = imagesMapper.selectImageUrlsByPropertyId(propertyId);
+// 프론트에서 넘어온 imageUrls (유지할 이미지들)
+    List<String> remainingUrls = request.getImageUrls();
+
+// 삭제 대상 도출 = DB에 있었지만 요청에 없는 이미지
+    List<String> toDelete = dbImageUrls.stream()
+            .filter(url -> !remainingUrls.contains(url))
+            .toList();
+
+// 삭제 대상 S3 삭제 및 DB 삭제
+    for (String url : toDelete) {
+      s3Service.deleteByUrl(url);
+      imagesMapper.softDeleteImageUrl(propertyId, url);
+    }
+
+// 새 이미지 추가 (여기부터 별도로 분기)
+    if (request.getImages() != null && !request.getImages().isEmpty()) {
+      for (MultipartFile image : request.getImages()) {
+        try {
+          byte[] webpImage = imageConversionService.convertToWebP(image);
+          String imageKey = "properties/" + propertyId + "_" + System.currentTimeMillis() + ".webp";
+          String imageUrl = s3Service.uploadBytes(imageKey, webpImage, "image/webp");
+
+          int result = imagesMapper.insertPropertyImage(propertyId, imageUrl);
+          if (result != 1) throw new RuntimeException("이미지 저장 실패: " + imageUrl);
+
+          // request.getImageUrls().add(imageUrl); → 절대 넣으면 안 됨!
+        } catch (Exception e) {
+          throw new RuntimeException("이미지 업로드 실패", e);
+        }
       }
     }
 
-    // 5. 업데이트된 매물 정보 조회 후 리턴
+
+    // 요청된 태그 이름 추출
+    List<String> incomingNames = request.getTags().stream()
+            .map(Tag::getName)
+            .collect(Collectors.toList());
+    if (!incomingNames.isEmpty()) {
+      //  태그 이름 중 DB에 없는 건 insert (중복 무시)
+      mapper.insertIgnoreDuplicates(incomingNames);
+
+      //  name → Tag(id, name)로 다시 조회
+      List<Tag> fullTags = mapper.findTagsByNames(incomingNames);
+
+      // 매물의 기존 태그 id 조회
+      List<Tag> existingTags = mapper.getTagsByPropertyId(propertyId);
+      Set<Long> existingTagIds = existingTags.stream()
+              .map(Tag::getId)
+              .collect(Collectors.toSet());
+
+      // 새 태그 id 집합
+      Set<Long> newTagIds = fullTags.stream()
+              .map(Tag::getId)
+              .collect(Collectors.toSet());
+
+      // 삭제할 태그 id = 기존에 있는데 요청엔 없는 것
+      Set<Long> toRemove = new HashSet<>(existingTagIds);
+      toRemove.removeAll(newTagIds);
+
+      // 삽입할 태그 id = 요청에는 있는데 기존엔 없는 것
+      Set<Long> toAdd = new HashSet<>(newTagIds);
+      toAdd.removeAll(existingTagIds);
+
+      // 삭제
+      if (!toRemove.isEmpty()) {
+        mapper.deletePropertyTags(propertyId, toRemove);
+      }
+
+      // 삽입 (property_id, tag_id)
+      if (!toAdd.isEmpty()) {
+        List<Map<String, Object>> insertMappings = toAdd.stream()
+                .map(tagId -> {
+                  Map<String, Object> map = new HashMap<>();
+                  map.put("propertyId", propertyId);
+                  map.put("tagId", tagId);
+                  return map;
+                })
+                .collect(Collectors.toList());
+
+        mapper.bulkInsert(insertMappings);
+      }
+    }
+
+    // 업데이트된 매물 정보 조회 후 리턴
     PropertyVO updatedProperty = mapper.selectPropertyById(propertyId);
     updatedProperty.setDetail(detailMapper.selectPropertyDetailByPropertyId(propertyId));
     updatedProperty.setImageUrls(imagesMapper.selectImageUrlsByPropertyId(propertyId));
@@ -187,11 +278,20 @@ public class PropertyService {
   }
 
   public Boolean existsFavorite(Long userId, Long propertyId) {
-    return detailMapper.existsFavorite(userId,propertyId);
+    return detailMapper.existsFavorite(userId, propertyId);
   }
 
   public Set<Long> getFavoritePropertyIds(Long userId, List<Long> propertyIds) {
     if (propertyIds == null || propertyIds.isEmpty()) return Set.of();
     return new HashSet<>(mapper.getFavoritePropertyIds(userId, propertyIds));
+  }
+
+  public List<PropertyVO> getPropertiesWithinBounds(MapBoundsRequestDto request) {
+    List<PropertyVO> res = mapper.selectPropertiesWithinBounds(request);
+    for (PropertyVO vo : res) {
+      List<Tag> tags = mapper.getTags(vo);
+      vo.setTags(tags);
+    }
+    return res;
   }
 }

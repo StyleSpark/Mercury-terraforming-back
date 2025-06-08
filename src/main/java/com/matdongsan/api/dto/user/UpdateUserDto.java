@@ -5,6 +5,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Data
 public class UpdateUserDto {
   private Long id;
+  private String name;
   private String email;
   private String nickname;
   private String phone;

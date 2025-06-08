@@ -30,4 +30,11 @@
         AND deleted_at IS NULL
     </update>
 
+    <update id="softDeleteImageUrl">
+        UPDATE property_detail_images
+        SET deleted_at = NOW()
+        WHERE property_id = #{propertyId}
+        AND image_url = #{url}
+    </update>
+
 </mapper>

@@ -15,4 +15,6 @@ public interface PropertyImagesMapper {
   int softDeletePropertyImages(PropertyDeleteRequest id);
 
   int softDeletePropertyImagesByPropertyId(Long propertyId);
+
+  void softDeleteImageUrl(Long propertyId, String url);
 }

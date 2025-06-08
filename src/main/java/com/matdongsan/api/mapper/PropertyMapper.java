@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Mapper
 public interface PropertyMapper {
@@ -34,4 +35,12 @@ public interface PropertyMapper {
   void bulkInsert(List<Map<String, Object>> propertyTagMappings);
 
   List<Tag> getTags(PropertyVO vo);
+
+  boolean checkPropertyByUserId(PropertyUpdateRequest request);
+
+  void deletePropertyTags(Long propertyId, Set<Long> toRemove);
+
+  List<Tag> getTagsByPropertyId(Long propertyId);
+
+  List<PropertyVO> selectPropertiesWithinBounds(MapBoundsRequestDto request);
 }

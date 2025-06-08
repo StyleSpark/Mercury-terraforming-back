@@ -1,12 +1,12 @@
 package com.matdongsan.api.dto.property;
 
+import com.matdongsan.api.vo.Tag;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.util.List;
-
 @Getter
 @Setter
 public class PropertyUpdateRequest {
@@ -29,13 +29,13 @@ public class PropertyUpdateRequest {
   private BigDecimal latitude;
   private BigDecimal longitude;
   private Long hitCount;
-  private Integer propertyTypeId;
+  private String propertyTypeId; // 문자열로 변경
+  private PropertyDetailRequest detail;
+  private List<String> imageUrls;
+
+  // 🔥 반드시 추가
+  private List<Tag> tags;
 
   private MultipartFile thumbnail;
-
-  //detail
-  private PropertyDetailRequest detail;
-
   private List<MultipartFile> images;
-  private List<String> imageUrls;
 }
