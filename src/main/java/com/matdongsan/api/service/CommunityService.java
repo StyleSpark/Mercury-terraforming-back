@@ -32,10 +32,11 @@ public class CommunityService {
    * @param communityId 커뮤니티 communityId
    * @return 커뮤니티 상세 데이터
    */
-  public CommunityGetResponse getCommunityDetail(Long communityId) {
-    communityMapper.updateCommunityViewCount(communityId); // TODO: 유저당 중복 방지를 구현해야할 지?
+  public CommunityGetResponse getCommunityDetail(Long communityId, Long loginUserId) {
+    communityMapper.updateCommunityViewCount(communityId);
 
     CommunityVO data = communityMapper.selectCommunityDetail(communityId);
+    boolean isMine = loginUserId != null && loginUserId.equals(data.getUserId());
 
     String targetType = "COMMUNITY";
     Long likeCount = reactionMapper.selectReactionLikeCount(communityId, targetType);
@@ -44,6 +45,7 @@ public class CommunityService {
     return CommunityGetResponse.builder()
             .communityId(data.getId())
             .userId(data.getUserId())
+            .userName(data.getUserName())
             .title(data.getTitle())
             .content(data.getContent())
             .imageUrls(data.getImageUrls())
@@ -51,6 +53,7 @@ public class CommunityService {
             .createdAt(data.getCreatedAt())
             .likeCount(likeCount)
             .dislikeCount(dislikeCount)
+            .isMine(isMine)
             .build();
   }
 

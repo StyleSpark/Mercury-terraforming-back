@@ -5,7 +5,6 @@ import com.matdongsan.api.dto.community.*;
 import com.matdongsan.api.dto.reaction.ReactionRequest;
 import com.matdongsan.api.security.UserRole;
 import com.matdongsan.api.service.CommunityService;
-import com.matdongsan.api.vo.CommunityVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -29,9 +28,11 @@ public class CommnunityController {
    * @return 커뮤니티 상세 정보
    */
   @GetMapping("/{communityId}")
-  public ResponseEntity<?> getCommunityDetail(@PathVariable Long communityId
-  ) {
-    CommunityGetResponse community = service.getCommunityDetail(communityId);
+  public ResponseEntity<?> getCommunityDetail(
+          @AuthenticationPrincipal UserRole user,
+          @PathVariable Long communityId) {
+    Long loginUserId = user != null ? user.getId() : null;
+    CommunityGetResponse community = service.getCommunityDetail(communityId, loginUserId);
     return ResponseEntity.ok(ApiResponse.success(community));
   }
 
@@ -44,9 +45,7 @@ public class CommnunityController {
   public ResponseEntity<?> getCommunities(
           @AuthenticationPrincipal UserRole user,
           CommunityGetRequest request) {
-
     Long loginUserId = user != null ? user.getId() : null;
-
     Map<String, Object> response = service.getCommunityListWithPagination(request, loginUserId);
     return ResponseEntity.ok(ApiResponse.success(response));
   }

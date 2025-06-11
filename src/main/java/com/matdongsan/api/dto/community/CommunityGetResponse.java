@@ -12,6 +12,7 @@ import java.util.List;
 public class CommunityGetResponse {
   private Long communityId;
   private Long userId;
+  private String userName;
   private Long categoryId;
   private String title;
   private String content;
@@ -20,4 +21,5 @@ public class CommunityGetResponse {
   private LocalDate createdAt;
   private Long likeCount;
   private Long dislikeCount;
+  private Boolean isMine;
 }
