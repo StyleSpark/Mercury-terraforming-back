@@ -43,7 +43,14 @@
                 c.content LIKE CONCAT('%', #{titleOrContent}, '%')
             )
         </if>
-      ORDER BY created_at DESC
+        <choose>
+            <when test="sort == 'views'">
+                ORDER BY c.view_count DESC
+            </when>
+            <otherwise>
+                ORDER BY c.created_at DESC
+            </otherwise>
+        </choose>
          LIMIT #{size}
         OFFSET #{offset}
     </select>

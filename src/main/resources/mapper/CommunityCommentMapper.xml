@@ -87,10 +87,12 @@
         COUNT(*) AS comment_count
         FROM community_comments
         WHERE deleted_at IS NULL
-        AND community_id IN
-        <foreach collection="list" item="id" open="(" separator="," close=")">
-            #{id}
-        </foreach>
+        <if test="list != null and list.size() > 0">
+            AND community_id IN
+            <foreach collection="list" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
         GROUP BY community_id
     </select>
 
