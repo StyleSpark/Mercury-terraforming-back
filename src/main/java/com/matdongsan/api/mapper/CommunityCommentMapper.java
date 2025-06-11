@@ -8,6 +8,7 @@ import com.matdongsan.api.vo.CommunityCommentVO;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface CommunityCommentMapper {
@@ -24,4 +25,7 @@ public interface CommunityCommentMapper {
   void updateComment(CommentUpdateRequest request);
 
   void softDeleteComment(CommentDeleteRequest request);
+
+  // 여러 게시글에 대한 댓글 수를 가져옴
+  List<Map<String, Object>> selectCommentCountGroupByCommunity(List<Long> communityIds);
 }

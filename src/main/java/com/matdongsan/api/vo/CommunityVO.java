@@ -17,4 +17,9 @@ public class CommunityVO {
   private List<String> imageUrls;
   private Integer viewCount;
   private LocalDate createdAt;
+
+  private String userName;
+  private Integer likeCount;
+  private Integer dislikeCount;
+  private Integer commentCount;
 }

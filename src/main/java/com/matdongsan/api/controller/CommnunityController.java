@@ -25,7 +25,8 @@ public class CommnunityController {
    * @return 커뮤니티 상세 정보
    */
   @GetMapping("/{communityId}")
-  public ResponseEntity<?> getCommunityDetail(@PathVariable Long communityId) {
+  public ResponseEntity<?> getCommunityDetail(@PathVariable Long communityId
+  ) {
     CommunityGetResponse community = service.getCommunityDetail(communityId);
     return ResponseEntity.ok(ApiResponse.success(community));
   }

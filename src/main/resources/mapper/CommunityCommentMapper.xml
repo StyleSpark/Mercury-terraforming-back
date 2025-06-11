@@ -82,4 +82,16 @@
            AND deleted_at IS NULL
     </update>
 
+    <select id="selectCommentCountGroupByCommunity" parameterType="list" resultType="map">
+        SELECT community_id,
+        COUNT(*) AS comment_count
+        FROM community_comments
+        WHERE deleted_at IS NULL
+        AND community_id IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        GROUP BY community_id
+    </select>
+
 </mapper>

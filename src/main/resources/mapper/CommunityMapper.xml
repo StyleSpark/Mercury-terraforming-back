@@ -17,20 +17,29 @@
     </select>
 
     <select id="selectCommunities" parameterType="com.matdongsan.api.dto.community.CommunityGetRequest" resultType="community">
-        SELECT id
-               ,user_id
-               ,category_id
-               ,title
-               ,content
-               ,image_urls
-               ,view_count
-               ,created_at
-          FROM communities
-         WHERE 1=1
+        SELECT c.id
+               ,u.name AS user_name
+               ,c.category_id
+               ,c.title
+               ,c.content
+               ,c.image_urls
+               ,c.view_count
+               ,c.created_at
+          FROM communities c
+        INNER JOIN users u ON u.id = c.user_id
+         WHERE c.deleted_at IS NULL
         <if test="title != null and title != ''">
-           AND title LIKE CONCAT('%', #{title}, '%')
+           AND c.title LIKE CONCAT('%', #{title}, '%')
         </if>
-           AND deleted_at IS NULL
+        <if test="userName != null and userName != ''">
+            AND u.name LIKE CONCAT('%', #{userName}, '%')
+        </if>
+        <if test="titleOrContent != null and titleOrContent != ''">
+            AND (
+                c.title LIKE CONCAT('%', #{titleOrContent}, '%') OR
+                c.content LIKE CONCAT('%', #{titleOrContent}, '%')
+            )
+        </if>
       ORDER BY created_at DESC
          LIMIT #{size}
         OFFSET #{offset}
