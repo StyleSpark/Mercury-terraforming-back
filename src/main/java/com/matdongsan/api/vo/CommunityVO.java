@@ -22,4 +22,6 @@ public class CommunityVO {
   private Integer likeCount;
   private Integer dislikeCount;
   private Integer commentCount;
+
+  private Boolean isMine;
 }

@@ -61,13 +61,14 @@ public class CommunityService {
    * @return 커뮤니티 목록
    */
   @Transactional(readOnly = true)
-  public Map<String, Object> getCommunityListWithPagination(CommunityGetRequest request) {
+  public Map<String, Object> getCommunityListWithPagination(CommunityGetRequest request, Long loginUserId) {
     List<CommunityVO> communities = communityMapper.selectCommunities(request);
 
     // 게시글 ID 추출
     List<Long> ids = new ArrayList<>();
     for (CommunityVO vo : communities) {
       ids.add(vo.getId());
+      vo.setIsMine(vo.getUserId() != null && vo.getUserId().equals(loginUserId));
     }
 
     // 댓글 수 조회 및 Map 변환

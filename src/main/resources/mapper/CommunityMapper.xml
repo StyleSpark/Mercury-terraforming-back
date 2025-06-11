@@ -18,6 +18,7 @@
 
     <select id="selectCommunities" parameterType="com.matdongsan.api.dto.community.CommunityGetRequest" resultType="community">
         SELECT c.id
+               ,c.user_id
                ,u.name AS user_name
                ,c.category_id
                ,c.title
