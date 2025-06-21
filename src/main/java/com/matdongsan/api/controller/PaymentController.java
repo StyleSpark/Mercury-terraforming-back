@@ -6,7 +6,6 @@ import com.matdongsan.api.dto.reservation.ReservationConfirmDto;
 import com.matdongsan.api.dto.reservation.ReservationCreateDto;
 import com.matdongsan.api.security.UserRole;
 import com.matdongsan.api.service.PaymentService;
-import com.matdongsan.api.util.ApiResponseUtil;
 import com.matdongsan.api.vo.TempReservationVO;
 import com.matdongsan.api.vo.TicketVO;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,6 +13,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -33,9 +33,12 @@ public class PaymentController {
           description = "예약을 진행하기 전 임시로 데이터를 저장합니다. 실제 예약 확정 전단계입니다."
   )
   @PostMapping("/temp")
-  public ResponseEntity<?> createTempReservationConfirm(@RequestBody ReservationCreateDto request) {
+  public ResponseEntity<?> createTempReservationConfirm(
+          @RequestBody ReservationCreateDto request) {
+
     TempReservationVO response = service.createTempReservation(request);
-    return ApiResponseUtil.ok(ApiResponse.success(response));
+    return ResponseEntity.status(HttpStatus.CREATED)
+            .body(ApiResponse.success(201, response));
   }
 
   @Operation(
@@ -43,9 +46,12 @@ public class PaymentController {
           description = "결제가 완료되면 임시 예약을 확정하고 예약 ID를 반환합니다. 동시성 제어 고려 필요."
   )
   @PostMapping("/reservationConfirm")
-  public ResponseEntity<?> confirmReservation(@RequestBody ReservationConfirmDto request) {
+  public ResponseEntity<?> confirmReservation(
+          @RequestBody ReservationConfirmDto request) {
+
     Long reservationId = service.confirmReservation(request);
-    return ApiResponseUtil.ok(ApiResponse.success(reservationId));
+    return ResponseEntity.status(HttpStatus.CREATED)
+            .body(ApiResponse.success(201, reservationId));
   }
 
   @Operation(
@@ -60,7 +66,8 @@ public class PaymentController {
 
     request.setUserId(user.getId());
     Long purchaseId = service.purchaseTicket(request);
-    return ApiResponseUtil.ok( purchaseId);
+    return ResponseEntity.status(HttpStatus.CREATED)
+            .body(ApiResponse.success(201, purchaseId));
   }
 
   @Operation(
@@ -73,6 +80,9 @@ public class PaymentController {
           @RequestParam(required = false) String ticketId) {
 
     List<TicketVO> tickets = service.getTicketInfoData(ticketId);
-    return ApiResponseUtil.ok(ApiResponse.success(tickets));
+    return ResponseEntity.status(HttpStatus.CREATED)
+            .body(ApiResponse.success(201, tickets));
   }
+
+  // TODO: 등록권 존재 여부 체크 → 구매 중복 방지
 }

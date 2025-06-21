@@ -129,7 +129,7 @@ public class SocialAuthService {
     try {
       MultipartFile newImage = request.getImage();
 
-      // ✅ 새 이미지가 있는 경우에만 처리
+      // 새 이미지가 있는 경우에만 처리
       if (newImage != null && !newImage.isEmpty()) {
         // 기존 이미지 삭제
         String oldProfile = mapper.selectUserProfile(request.getId());
@@ -144,7 +144,7 @@ public class SocialAuthService {
         request.setProfile(newUrl);
       }
 
-      // ✅ DB 업데이트 실행
+      // DB 업데이트 실행
       return mapper.updateUserProfile(request);
 
     } catch (Exception e) {

@@ -4,7 +4,6 @@ import com.matdongsan.api.dto.ApiResponse;
 import com.matdongsan.api.dto.agent.*;
 import com.matdongsan.api.security.UserRole;
 import com.matdongsan.api.service.AgentService;
-import com.matdongsan.api.util.ApiResponseUtil;
 import com.matdongsan.api.vo.AgentVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -48,7 +47,35 @@ public class AgentController {
           @Parameter(description = "중개인 고유 ID", example = "1")
           @PathVariable Long agentId) {
     AgentVO agentDetail = service.getAgentDetail(agentId);
-    return ApiResponseUtil.ok(agentDetail);
+    return ResponseEntity.ok(ApiResponse.success(agentDetail));
+  }
+
+  @Operation(
+          summary = "중개인 리뷰 작성",
+          description = "특정 중개인에 대해 리뷰를 작성합니다. JWT 인증 필요.",
+          security = @SecurityRequirement(name = "JWT")
+  )
+  @PostMapping("/{agentId}/reviews")
+  public ResponseEntity<?> createReview(
+          @Parameter(description = "중개인 고유 ID", example = "1") @PathVariable Long agentId,
+          @RequestBody(required = true) AgentReviewCreateRequest request,
+          @Parameter(hidden = true) @AuthenticationPrincipal UserRole user) {
+
+    request.setUserId(user.getId());
+    request.setAgentId(agentId);
+    service.createReview(request);
+    return ResponseEntity.ok(ApiResponse.success("중개인에 대한 리뷰가 작성되었습니다."));
+  }
+
+  @Operation(summary = "중개인 리뷰 목록 조회", description = "특정 중개인의 리뷰 목록을 페이지네이션 형식으로 조회합니다.")
+  @GetMapping("/{agentId}/reviews")
+  public ResponseEntity<?> getAgentReviews(
+          @Parameter(description = "중개인 고유 ID", example = "1") @PathVariable Long agentId,
+          @ParameterObject AgentReviewGetRequest request) {
+
+    request.setAgentId(agentId);
+    Map<String, Object> response = service.getAgentReviewListWithPagination(request);
+    return ResponseEntity.ok(ApiResponse.success(response));
   }
 
   @Operation(summary = "중개인 매물 리스트 조회", description = "특정 중개인이 등록한 매물 목록을 조회합니다.")
@@ -59,7 +86,7 @@ public class AgentController {
           @Parameter(description = "페이지 크기", example = "10") @RequestParam(defaultValue = "10") int size) {
 
     Map<String, Object> result = service.getPropertiesByAgent(agentId, page, size);
-    return  ApiResponseUtil.ok(result);
+    return ResponseEntity.ok(ApiResponse.success(result));
   }
 
   @Operation(
@@ -76,18 +103,46 @@ public class AgentController {
     request.setUserId(user.getId());
     request.setProfileImage(profileImage);
     service.registerAgent(request);
-    return  ApiResponseUtil.ok("중개인 등록 신청이 완료되었습니다.");
+    return ResponseEntity.ok(ApiResponse.success("중개인 등록 신청이 완료되었습니다."));
   }
 
   /**
+   * 중개인 리뷰 수정
+   * @param reviewId 중개인 리뷰 id
+   * @param request 리뷰 내용, 점수
+   * @return 리뷰 수정 성공 여부
+   */
+  @PatchMapping("/agents/reviews/{reviewId}")
+  public ResponseEntity<?> updateAgentReview(@PathVariable Long reviewId, @RequestBody AgentReviewUpdateRequest request) {
+    // TODO: 로그인 사용자 인증 구현 후 수정
+    request.setReviewId(reviewId);
+    request.setUserId(24L);
+    service.updateAgentReview(request);
+    return ResponseEntity.ok(ApiResponse.success("중개인 리뷰가 수정되었습니다."));
+  }
+
+
+  /**
+   * 중개인 리뷰 삭제
+   * @param reviewId 중개인 리뷰 id
+   * @return 중개인 리뷰 삭제 성공 여부
+   */
+  @DeleteMapping("/agents/reviews/{reviewId}")
+  public ResponseEntity<?> deleteAgentReview(@PathVariable Long reviewId,@AuthenticationPrincipal UserRole user) {
+    service.deleteAgentReview(reviewId, user.getId());
+    return ResponseEntity.ok(ApiResponse.success("중개인 리뷰가 삭제되었습니다."));
+  }
+
+
+  /**
    * 중개인 삭제 (더 이상 '중개인'으로써 활동을 하고 싶지 않을 때라 가정, agents 테이블의 deleted_at 값 변경 / soft-delete)
-   * @param request userId
+   * @param request userId TODO: 로그인 사용자 인증 구현 후 수정
    * @return 중개인 삭제 성공 여부
    */
-  @DeleteMapping("/me")
+  @DeleteMapping("/my-page")
   public ResponseEntity<?> deleteAgent(@RequestBody AgentDeleteRequest request) {
     service.deleteAgent(request);
-    return  ApiResponseUtil.ok("중개인 삭제가 완료되었습니다.");
+    return ResponseEntity.ok(ApiResponse.success("중개인 삭제가 완료되었습니다."));
   }
 
   /**
@@ -95,10 +150,10 @@ public class AgentController {
    * @param request AgentUpdateRequest
    * @return 중개인 수정 성공 여부
    */
-  @PatchMapping("/me")
+  @PatchMapping("/my-page")
   public ResponseEntity<?> updateAgent(@RequestBody AgentUpdateRequest request,@AuthenticationPrincipal UserRole user) {
-   service.updateAgent(request, user.getId());
-    return  ApiResponseUtil.ok("중개인 정보가 수정되었습니다.");
+    service.updateAgent(request, user.getId());
+    return ResponseEntity.ok(ApiResponse.success("중개인 정보가 수정되었습니다."));
   }
 
 }

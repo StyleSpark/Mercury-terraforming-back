@@ -32,7 +32,7 @@ public interface PropertyMapper {
 
   void insertIgnoreDuplicates(List<String> newTags);
 
-  void bulkInsert(List<Map<String, Object>> propertyTagMappings);
+  void bulkInsert(List<Map<String, Long>> propertyTagMappings);
 
   List<Tag> getTags(PropertyVO vo);
 
