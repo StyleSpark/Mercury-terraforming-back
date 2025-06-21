@@ -18,7 +18,7 @@ public interface UserMapper {
 
   void insertUserWithPassword(UserVO user);
 
-  void updateAgentStatus(Long userId);
+  int updateAgentStatus(Long userId);
 
   boolean existsByNickname(String nickname);
 

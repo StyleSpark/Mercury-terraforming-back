@@ -5,11 +5,13 @@ import com.matdongsan.api.dto.notice.NoticeCreateRequest;
 import com.matdongsan.api.dto.notice.NoticeDeleteRequest;
 import com.matdongsan.api.dto.notice.NoticeGetRequest;
 import com.matdongsan.api.dto.notice.NoticeUpdateRequest;
+import com.matdongsan.api.security.UserRole;
 import com.matdongsan.api.service.NoticeService;
 import com.matdongsan.api.vo.NoticeVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -68,11 +70,15 @@ public class NoticeController {
    * @return 등록 결과
    */
   @PostMapping
-  public ResponseEntity<?> createNotice(@RequestBody NoticeCreateRequest request) {
-    String admin = "admin"; // 현재 로그인 한 유저 정보
+  public ResponseEntity<?> createNotice(@RequestBody NoticeCreateRequest request, @AuthenticationPrincipal UserRole user) {
+
     // 관리자가 맞는지 확인후에 setter 적용
     // 그리고 service 실행 아니라면 fail - 요청 권한 부족과 같은 메시지 출력
-    request.setAuthor(admin);
+    if(!user.getRole().equals("ADMIN")){
+      // 403 에러 발생
+      return null;
+    }
+    request.setAuthor(user.getRole());
     Long id = service.createNotice(request);
     return ResponseEntity
             .status(HttpStatus.CREATED)

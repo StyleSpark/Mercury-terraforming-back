@@ -8,6 +8,10 @@ import com.matdongsan.api.security.UserRole;
 import com.matdongsan.api.service.PaymentService;
 import com.matdongsan.api.vo.TempReservationVO;
 import com.matdongsan.api.vo.TicketVO;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,69 +23,66 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/payments")
 @RequiredArgsConstructor
+@Tag(name = "결제 API", description = "대리 서비스 결제, 등록권 구매, 예약 기능을 제공합니다.")
 public class PaymentController {
 
-  final private PaymentService service;
+  private final PaymentService service;
 
-  // 대리 서비스 결제 완료
-
-  /**
-   * 임시 예약 확인 생성
-   * TODO: 임시 테이블 자동 삭제 로직 추가 해야함
-   * @param request
-   * @return
-   */
+  @Operation(
+          summary = "임시 예약 생성",
+          description = "예약을 진행하기 전 임시로 데이터를 저장합니다. 실제 예약 확정 전단계입니다."
+  )
   @PostMapping("/temp")
-  public ResponseEntity<?> createTempReservationConfirm(@RequestBody ReservationCreateDto request) {
+  public ResponseEntity<?> createTempReservationConfirm(
+          @RequestBody ReservationCreateDto request) {
+
     TempReservationVO response = service.createTempReservation(request);
-    return ResponseEntity
-            .status(HttpStatus.CREATED)
+    return ResponseEntity.status(HttpStatus.CREATED)
             .body(ApiResponse.success(201, response));
   }
 
-  /**
-   * 결제 완료 및 예약 확인 
-   * TODO: 동시성 제어 기능 추가 및 코드 정리
-   * @param request
-   * @return
-   */
+  @Operation(
+          summary = "예약 확정 및 결제 완료 처리",
+          description = "결제가 완료되면 임시 예약을 확정하고 예약 ID를 반환합니다. 동시성 제어 고려 필요."
+  )
   @PostMapping("/reservationConfirm")
-  public ResponseEntity<?> confirmReservation(@RequestBody ReservationConfirmDto request) {
+  public ResponseEntity<?> confirmReservation(
+          @RequestBody ReservationConfirmDto request) {
+
     Long reservationId = service.confirmReservation(request);
-    return ResponseEntity
-            .status(HttpStatus.CREATED)
+    return ResponseEntity.status(HttpStatus.CREATED)
             .body(ApiResponse.success(201, reservationId));
   }
 
-  /**
-   * 등록권 및 티켓 구매
-   * @param request
-   * @param user
-   * @return
-   */
+  @Operation(
+          summary = "등록권 또는 티켓 구매",
+          description = "회원이 등록권 또는 티켓을 구매합니다. JWT 인증 필요.",
+          security = @SecurityRequirement(name = "JWT")
+  )
   @PostMapping("/purchaseTicket")
-  public ResponseEntity<?> purchaseTicket(@RequestBody PurchaseTicketDto request, @AuthenticationPrincipal UserRole user) {
+  public ResponseEntity<?> purchaseTicket(
+          @RequestBody PurchaseTicketDto request,
+          @Parameter(hidden = true) @AuthenticationPrincipal UserRole user) {
+
     request.setUserId(user.getId());
     Long purchaseId = service.purchaseTicket(request);
-    return ResponseEntity
-            .status(HttpStatus.CREATED)
+    return ResponseEntity.status(HttpStatus.CREATED)
             .body(ApiResponse.success(201, purchaseId));
   }
 
-  /**
-   * 티켓 데이터 조회
-   * @param ticketId
-   * @return
-   */
+  @Operation(
+          summary = "티켓 정보 조회",
+          description = "사용자가 보유한 등록권 또는 티켓 정보를 조회합니다."
+  )
   @GetMapping("/tickets")
-  public ResponseEntity<?> getTickets(@RequestParam(required = false) String ticketId) {
+  public ResponseEntity<?> getTickets(
+          @Parameter(description = "조회할 티켓 ID (null이면 전체 조회)", example = "ticket_abc123")
+          @RequestParam(required = false) String ticketId) {
+
     List<TicketVO> tickets = service.getTicketInfoData(ticketId);
-    return ResponseEntity
-            .status(HttpStatus.CREATED)
+    return ResponseEntity.status(HttpStatus.CREATED)
             .body(ApiResponse.success(201, tickets));
   }
-  /**
-   *  Todo: 등록권 체크 하는 로직 추가하여 등록권이 없는 경우에만 다시 구매하도록 막아야함
-   */
-  
+
+  // TODO: 등록권 존재 여부 체크 → 구매 중복 방지
 }

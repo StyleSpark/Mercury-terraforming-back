@@ -9,6 +9,7 @@
         ,target_id
         ,content
         ,created_at
+        ,profile_url
         )
         VALUES (
         #{userId}
@@ -16,6 +17,7 @@
         ,#{targetId}
         ,#{content}
         ,NOW()
+        ,#{profileUrl}
         )
     </insert>
 

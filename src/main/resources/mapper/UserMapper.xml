@@ -69,15 +69,21 @@
 
     <select id="selectUserDataById" parameterType="long" resultType="user">
         SELECT
+        u.id,
+        u.name,
+        u.email,
         u.phone,
-        u.temperature,
-        u.profile,
         u.nickname,
-        COALESCE(SUM(pt.remain_count), 0) AS ticket
+        u.role,
+        u.profile,
+        u.temperature,
+        COALESCE((
+        SELECT SUM(pt.remain_count)
+        FROM purchase_ticket pt
+        WHERE pt.user_id = u.id
+        ), 0) AS ticket
         FROM users u
-        LEFT JOIN purchase_ticket pt ON pt.user_id = u.id
         WHERE u.id = #{id}
-        GROUP BY u.phone, u.temperature, u.profile, u.nickname
     </select>
 
     <select id="selectUserProfile" parameterType="long" resultType="string" >
@@ -108,17 +114,17 @@
             SELECT 1
             FROM users
             WHERE id = #{userId}
-            AND is_agent = false
-            AND agent_verified = false
+            AND role = 'AGENT'
         )
     </select>
 
     <!-- 중개인 검증 후, 중개인 관련 컬럼 값 변경 -->
     <update id="updateAgentStatus" parameterType="java.lang.Long">
         UPDATE users
-        SET is_agent = true
-        ,agent_verified = true
+        SET agent_converted_at = NOW()
+        ,role = 'AGENT'
         WHERE id = #{userId}
+          AND deleted_at IS NOT NULL
     </update>
 
 

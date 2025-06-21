@@ -39,16 +39,15 @@ public class VworldAgentLicenseVerifier implements AgentLicenseVerifier {
             request.getAgentName(), request.getOfficeName(), request.getJurirno());
 
     // 2. 요청 URL을 구성하기 위한 파라미터 인코딩 (중복 인코딩 방지용)
+    String rawOfficeName = request.getOfficeName().replaceAll("\\(.*?\\)", "").trim();
     String encodedOfficeName = UriUtils.encode(request.getOfficeName(), StandardCharsets.UTF_8);
     String encodedAgentName = UriUtils.encode(request.getAgentName(), StandardCharsets.UTF_8);
     String encodedJurirno = UriUtils.encode(request.getJurirno(), StandardCharsets.UTF_8);
 
     // 3. 요청 URI 구성 (인코딩된 값 사용 & build(false)로 추가 인코딩 방지)
     URI uri = URI.create(String.format(
-            "%s?bsnmCmpnm=%s&brkrNm=%s&jurirno=%s&format=json&numOfRows=1&pageNo=1&key=%s&domain=localhost",
+            "%s?jurirno=%s&format=json&numOfRows=10&pageNo=1&key=%s&domain=localhost",
             vworldApiProperties.getBaseUrl(),
-            encodedOfficeName,
-            encodedAgentName,
             encodedJurirno,
             vworldApiProperties.getKey()
     ));
@@ -105,15 +104,8 @@ public class VworldAgentLicenseVerifier implements AgentLicenseVerifier {
       String resOffice = field.get("bsnmCmpnm").asText();
       String resJurirno = field.get("jurirno").asText();
 
-      log.info("[응답 비교] 요청 vs 응답");
-      log.info("agentName: {} vs {}", request.getAgentName(), resName);
-      log.info("officeName: {} vs {}", request.getOfficeName(), resOffice);
-      log.info("jurirno: {} vs {}", request.getJurirno(), resJurirno);
-
       // 10. 모든 정보가 일치하는지 검증
-      return request.getAgentName().equals(resName) &&
-              request.getOfficeName().equals(resOffice) &&
-              request.getJurirno().equals(resJurirno);
+      return  request.getAgentName().equals(resName) &&request.getJurirno().equals(resJurirno);
 
     } catch (Exception e) {
       log.error("[API 응답 파싱 실패] {}", e.getMessage(), e);

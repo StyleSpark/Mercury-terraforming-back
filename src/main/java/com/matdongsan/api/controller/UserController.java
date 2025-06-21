@@ -1,7 +1,6 @@
 package com.matdongsan.api.controller;
 
 import com.matdongsan.api.dto.ApiResponse;
-import com.matdongsan.api.dto.agent.*;
 import com.matdongsan.api.dto.user.SocialLoginDto;
 import com.matdongsan.api.dto.user.UpdateUserDto;
 import com.matdongsan.api.dto.user.UserLoginDto;
@@ -11,9 +10,12 @@ import com.matdongsan.api.service.AgentService;
 import com.matdongsan.api.service.ReportService;
 import com.matdongsan.api.service.SocialAuthService;
 import com.matdongsan.api.util.JwtUtil;
-import com.matdongsan.api.vo.AgentVO;
 import com.matdongsan.api.vo.PropertyVO;
 import com.matdongsan.api.vo.UserVO;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -26,6 +28,7 @@ import java.util.Map;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/auth")
+@Tag(name = "사용자 인증 및 마이페이지 API", description = "로그인, 회원가입, 프로필 관리 등 사용자 기능 제공")
 public class UserController {
 
   private final SocialAuthService service;
@@ -33,15 +36,7 @@ public class UserController {
   private final AgentService agentService;
   private final ReportService reportService;
 
-  //소셜 로그인
-
-  /**
-   * 소셜 로그인
-   * - 현재는 구글만 구현
-   *
-   * @param request
-   * @return
-   */
+  @Operation(summary = "소셜 로그인(구글)", description = "Google OAuth2 토큰을 기반으로 로그인 처리합니다.")
   @PostMapping("/social-login")
   public ResponseEntity<?> socialLogin(@RequestBody SocialLoginDto request) {
     UserVO user = service.handleSocialLogin(request.getProvider(), request.getToken());
@@ -58,7 +53,7 @@ public class UserController {
     ));
   }
 
-  // 회원가입
+  @Operation(summary = "회원가입", description = "일반 사용자가 회원가입을 진행합니다.")
   @PostMapping("/signup")
   public ResponseEntity<?> signup(@RequestBody UserSignupDto request) {
     UserVO createdUser = service.signup(request);
@@ -74,7 +69,7 @@ public class UserController {
     ));
   }
 
-  // 로그인
+  @Operation(summary = "이메일 로그인", description = "이메일과 비밀번호로 로그인합니다.")
   @PostMapping("/login")
   public ResponseEntity<?> login(@RequestBody UserLoginDto request) {
     UserVO user = service.login(request.getEmail(), request.getPassword());
@@ -91,12 +86,7 @@ public class UserController {
     ));
   }
 
-  /**
-   * 닉네임 중복 여부 확인
-   *
-   * @param request
-   * @return
-   */
+  @Operation(summary = "닉네임 중복 체크", description = "입력한 닉네임이 중복되는지 여부를 확인합니다.")
   @PostMapping("/nickname-check")
   public ResponseEntity<?> checkNickname(@RequestBody Map<String, String> request) {
     String nickname = request.get("nickname");
@@ -104,27 +94,26 @@ public class UserController {
     return ResponseEntity.ok(Map.of("available", !exists));
   }
 
-  /**
-   * 내 정보 조회
-   * @param user
-   * @return
-   */
+  @Operation(
+          summary = "내 정보 조회",
+          description = "JWT 토큰을 기반으로 로그인한 사용자의 프로필 정보를 조회합니다.",
+          security = @SecurityRequirement(name = "JWT")
+  )
   @GetMapping("/my-page")
-  public ResponseEntity<?> getMyprofile(@AuthenticationPrincipal UserRole user) {
+  public ResponseEntity<?> getMyprofile(
+          @Parameter(hidden = true) @AuthenticationPrincipal UserRole user) {
     UserVO response = service.getUserDataByUserId(user);
     return ResponseEntity.ok(ApiResponse.success(response));
   }
 
-  /**
-   * 내 정보 수정
-   * @param user
-   * @param request
-   * @param file
-   * @return
-   */
+  @Operation(
+          summary = "내 정보 수정",
+          description = "사용자가 자신의 프로필을 수정합니다. (닉네임, 프로필 이미지 등). JWT 인증 필요.",
+          security = @SecurityRequirement(name = "JWT")
+  )
   @PutMapping("/my-page")
   public ResponseEntity<?> updateUserProfile(
-          @AuthenticationPrincipal UserRole user,
+          @Parameter(hidden = true) @AuthenticationPrincipal UserRole user,
           @RequestPart("user") UpdateUserDto request,
           @RequestPart(value = "file", required = false) MultipartFile file
   ) {
@@ -135,164 +124,15 @@ public class UserController {
     return ResponseEntity.ok(service.updateProfile(request));
   }
 
-  /**
-   * 마이페이지 - 매물 관리
-   * Todo: 검색, 필터 기능 추가 필요
-   * @param user
-   * @return
-   */
+  @Operation(
+          summary = "내가 등록한 매물 조회",
+          description = "사용자가 등록한 매물 목록을 조회합니다. JWT 인증 필요.",
+          security = @SecurityRequirement(name = "JWT")
+  )
   @GetMapping("/properties")
-  public ResponseEntity<?> getPropertiesByUser(@AuthenticationPrincipal UserRole user) {
+  public ResponseEntity<?> getPropertiesByUser(
+          @Parameter(hidden = true) @AuthenticationPrincipal UserRole user) {
     List<PropertyVO> response = service.getPropertiesByUser(user.getId());
-  return ResponseEntity.ok(ApiResponse.success(response));
-  }
-  // 대리인 등록 신청
-
-  /**
-   * 중개인 단일 조회
-   * @param agentId 중개인 고유 id
-   * @return 중개인 데이터
-   */
-  @GetMapping("/agents/{agentId}")
-  public ResponseEntity<?> getAgentDetail(@PathVariable Long agentId) {
-    AgentVO agentDetail = agentService.getAgentDetail(agentId);
-    return ResponseEntity.ok(ApiResponse.success(agentDetail));
-  }
-
-  /**
-   * 중개인 목록 조회
-   * @param request 지역:address, 매물명:propertyName, 매물 유형:propertyType, 중개인 이름:agentName, 브랜드명:brandName
-   * @return AgentGetResponse, 검색 결과 총 갯수, 페이지, 페이지 사이즈
-   */
-  @GetMapping("/agents")
-  public ResponseEntity<?> getAgents(AgentGetRequest request) {
-    Map<String, Object> response = agentService.getAgentListWithPagination(request);
     return ResponseEntity.ok(ApiResponse.success(response));
   }
-
-  /**
-   * 중개인 등록 (회원 -> 중개인 전환)
-   * @param request AgentRegisterRequest
-   * @return 중개인 등록 성공 여부
-   */
-  @PostMapping("/agents/me")
-  public ResponseEntity<?> registerAgent(@RequestBody AgentRegisterRequest request) {
-    // TODO: 로그인 사용자 인증 구현 후 수정 필요
-    agentService.registerAgent(request);
-    return ResponseEntity.ok(ApiResponse.success("중개인 등록 신청이 완료되었습니다."));
-  }
-
-  /**
-   * 중개인 삭제 (더 이상 '중개인'으로써 활동을 하고 싶지 않을 때라 가정, agents 테이블의 deleted_at 값 변경 / soft-delete)
-   * @param request userId TODO: 로그인 사용자 인증 구현 후 수정
-   * @return 중개인 삭제 성공 여부
-   */
-  @DeleteMapping("/agents/me")
-  public ResponseEntity<?> deleteAgent(@RequestBody AgentDeleteRequest request) {
-    agentService.deleteAgent(request);
-    return ResponseEntity.ok(ApiResponse.success("중개인 삭제가 완료되었습니다."));
-  }
-
-  /**
-   * 중개인 수정 (이직, 사무소 이동, 자기소개 등)
-   * @param request AgentUpdateRequest
-   * @return 중개인 수정 성공 여부
-   */
-  @PatchMapping("/agents/me")
-  public ResponseEntity<?> updateAgent(@RequestBody AgentUpdateRequest request) {
-    Long userId = 12L; // TODO: 로그인 사용자 인증 구현 후 수정
-    agentService.updateAgent(request, userId);
-    return ResponseEntity.ok(ApiResponse.success("중개인 정보가 수정되었습니다."));
-  }
-
-  /**
-   * 중개인 리뷰 작성
-   * @param agentId 중개인 고유 id
-   * @param request AgentReviewCreateRequest (매물 id, 리뷰 내용, 평점)
-   * @return 리뷰 작성 성공 여부
-   */
-  @PostMapping("/agents/{agentId}/reviews")
-  public ResponseEntity<?> createReview(@PathVariable Long agentId, @RequestBody AgentReviewCreateRequest request) {
-    // TODO: 로그인 사용자 인증 구현 후 수정
-    request.setUserId(24L);
-    request.setAgentId(agentId);
-    agentService.createReview(request);
-    return ResponseEntity.ok(ApiResponse.success("중개인에 대한 리뷰가 작성되었습니다."));
-  }
-
-  /**
-   * 특정 중개인의 리뷰 목록 조회
-   * @param agentId 중개인 고유 id
-   * @param request agentId, 페이지, 사이즈
-   * @return @return 사용자 이름, 리뷰 내용, 평점, 생성일자, 리뷰 총 갯수, 페이지, 사이즈
-   */
-  @GetMapping("/agents/{agentId}/reviews")
-  public ResponseEntity<?> getAgentReviews(@PathVariable Long agentId, AgentReviewGetRequest request) {
-    // TODO: 로그인 사용자 인증 구현 후 수정
-    request.setAgentId(agentId);
-    Map<String, Object> response = agentService.getAgentReviewListWithPagination(request);
-    return ResponseEntity.ok(ApiResponse.success(response));
-  }
-
-  /**
-   * 중개인 리뷰 수정
-   * @param reviewId 중개인 리뷰 id
-   * @param request 리뷰 내용, 점수
-   * @return 리뷰 수정 성공 여부
-   */
-  @PatchMapping("/agents/reviews/{reviewId}")
-  public ResponseEntity<?> updateAgentReview(@PathVariable Long reviewId, @RequestBody AgentReviewUpdateRequest request) {
-    // TODO: 로그인 사용자 인증 구현 후 수정
-    request.setReviewId(reviewId);
-    request.setUserId(24L);
-    agentService.updateAgentReview(request);
-    return ResponseEntity.ok(ApiResponse.success("중개인 리뷰가 수정되었습니다."));
-  }
-
-  /**
-   * 중개인 리뷰 삭제
-   * @param reviewId 중개인 리뷰 id
-   * @return 중개인 리뷰 삭제 성공 여부
-   */
-  @DeleteMapping("/agents/reviews/{reviewId}")
-  public ResponseEntity<?> deleteAgentReview(@PathVariable Long reviewId) {
-    // TODO: 로그인 사용자 인증 구현 후 수정
-    Long userId = 24L;
-    agentService.deleteAgentReview(reviewId, userId);
-    return ResponseEntity.ok(ApiResponse.success("중개인 리뷰가 삭제되었습니다."));
-  }
-
-  /**
-   * 중개인 신고
-   * @param agentId 중개인 id
-   * @param request 로그인 사용자 id, 신고 유형, 중개인 id, 신고 내용
-   * @return 중개인 신고 성공 여부
-   */
-  @PostMapping("/agents/{agentId}/reports")
-  public ResponseEntity<?> createAgentReport(@PathVariable Long agentId, @RequestBody AgentReportCreateRequest request) {
-    // TODO: 로그인 사용자 인증 구현 후 수정
-    Long userId = 24L;
-    request.setUserId(userId);
-    request.setTargetId(agentId);
-    reportService.createAgentReport(request);
-    return ResponseEntity.ok(ApiResponse.success("중개인 신고가 완료되었습니다."));
-  }
-
-  /**
-   * 로그인 사용자가 신고한 중개인 목록 조회
-   * @param request 로그인 유저 id, 페이지, 사이즈,
-   * @return 중개인 이름, 신고 유형, 신고 내용, 생성일자 Map
-   */
-  @GetMapping("/agents/reports/me")
-  public ResponseEntity<?> getAgentReports(AgentReportGetRequest request) {
-    // TODO: 로그인 사용자 인증 구현 후 수정
-    Long userId = 24L;
-    request.setUserId(userId);
-    Map<String, Object> response = reportService.getAgentReports(request);
-    return ResponseEntity.ok(ApiResponse.success(response));
-  }
-
-  // TODO: 특정 중개인에 대한 신고 목록 (관리자)
-
-  // 중개인 채팅
 }
