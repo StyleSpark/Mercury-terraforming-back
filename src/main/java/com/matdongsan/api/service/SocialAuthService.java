@@ -4,6 +4,7 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.matdongsan.api.dto.user.SocialUser;
 import com.matdongsan.api.dto.user.UpdateUserDto;
@@ -67,9 +68,11 @@ public class SocialAuthService {
     try {
       GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
               GoogleNetHttpTransport.newTrustedTransport(),
-              JacksonFactory.getDefaultInstance()
-      ).setAudience(Collections.singletonList(googleClientId))
+              GsonFactory.getDefaultInstance()
+      )
+              .setAudience(Collections.singletonList(googleClientId))
               .build();
+
 
       GoogleIdToken idToken = verifier.verify(idTokenString);
       if (idToken == null) {

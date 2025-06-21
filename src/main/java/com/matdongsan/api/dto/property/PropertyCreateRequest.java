@@ -12,6 +12,10 @@ import java.util.List;
 @Setter
 public class PropertyCreateRequest {
 
+
+  @Schema(description = "매물 ID", example = "1")
+  private Long id;
+
   @Schema(description = "사용자 ID", example = "1")
   private Long userId;
 
