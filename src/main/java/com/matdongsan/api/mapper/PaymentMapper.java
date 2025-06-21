@@ -27,9 +27,9 @@ public interface PaymentMapper {
   int insertPaymentHistory(PaymentCreateDto payment);
   
   // 등록권 구매 기록
-  Long createTicketPaymentHistory(PurchaseTicketDto request);
+  int createTicketPaymentHistory(PurchaseTicketDto request);
   // 등록권 생성
-  Long createPurchaseTicket(PurchaseTicketDto request);
+  int createPurchaseTicket(PurchaseTicketDto request);
 
   List<TicketVO> selectTicketInfoData(String ticketId);
 

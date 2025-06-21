@@ -72,13 +72,24 @@ public class PaymentService {
    * @return 처리된 행 수
    */
   public Long purchaseTicket(PurchaseTicketDto request) {
+
+    if (request.getUserId() == null) {
+      throw new IllegalArgumentException("회원 정보가 누락되었습니다.");
+    }
+    if (request.getTicketId() == null || request.getTicketId().isBlank()) {
+      throw new IllegalArgumentException("티켓 ID는 필수입니다.");
+    }
+
     request.setOrderId(generateOrderId());
     request.setItemName(resolveTicketName(request.getTicketId()));
 
-    long result = 0;
-    result += mapper.createTicketPaymentHistory(request);
-    result += mapper.createPurchaseTicket(request);
-    return result;
+    int historyResult = mapper.createTicketPaymentHistory(request);
+    int ticketResult = mapper.createPurchaseTicket(request);
+
+    if (historyResult != 1 || ticketResult != 1) {
+      throw new IllegalStateException("티켓 구매 처리 중 오류가 발생했습니다.");
+    }
+    return 2L;
   }
 
   /**
