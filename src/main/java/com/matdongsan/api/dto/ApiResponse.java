@@ -30,10 +30,6 @@ public class ApiResponse<T> {
     return new ApiResponse<>(200, "Success", data);
   }
 
-  public static <T> ApiResponse<T> fail(String message) {
-    return new ApiResponse<>(400, message, null);
-  }
-
   public static <T> ApiResponse<T> success(int status, T data) {
     return new ApiResponse<>(status, "Success", data);
   }

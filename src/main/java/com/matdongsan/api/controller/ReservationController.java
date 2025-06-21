@@ -4,6 +4,7 @@ import com.matdongsan.api.dto.ApiResponse;
 import com.matdongsan.api.dto.reservation.ReservationCreateDto;
 import com.matdongsan.api.dto.reservation.ReservationGetDto;
 import com.matdongsan.api.dto.reservation.ReservationTimeGetDto;
+import com.matdongsan.api.security.UserRole;
 import com.matdongsan.api.service.ReservationService;
 import com.matdongsan.api.vo.ReservationVO;
 import com.matdongsan.api.vo.ReservedTimeVO;
@@ -13,6 +14,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,8 +34,9 @@ public class ReservationController {
   )
   @PostMapping
   public ResponseEntity<?> createReservation(
-          @RequestBody ReservationCreateDto request) {
+          @RequestBody ReservationCreateDto request,@AuthenticationPrincipal UserRole user) {
 
+    request.setUserId(user.getId());
     Long id = service.createReservation(request);
     return ResponseEntity.ok(ApiResponse.success(id));
   }
@@ -45,8 +48,7 @@ public class ReservationController {
   )
   @GetMapping
   public ResponseEntity<?> getReservationByUser(
-          @Parameter(hidden = true) ReservationGetDto request) {
-
+          @Parameter(hidden = true) ReservationGetDto request, @AuthenticationPrincipal UserRole user) {
     List<ReservationVO> response = service.getReservations(request);
     return ResponseEntity.ok(ApiResponse.success(response));
   }

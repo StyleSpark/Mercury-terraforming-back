@@ -4,6 +4,7 @@ import com.matdongsan.api.dto.ApiResponse;
 import com.matdongsan.api.dto.property.*;
 import com.matdongsan.api.security.UserRole;
 import com.matdongsan.api.service.PropertyService;
+import com.matdongsan.api.util.ApiResponseUtil;
 import com.matdongsan.api.vo.PropertyVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -42,8 +43,9 @@ public class PropertyController {
     request.setUserId(user.getId());
     request.setThumbnail(thumbnail);
     request.setStatus("ACTIVE");
+
     Long id = service.createProperty(request);
-    return ResponseEntity.ok(ApiResponse.success(id));
+    return ApiResponseUtil.ok( id);
   }
 
   @Operation(summary = "매물 리스트 조회", description = "조건에 맞는 매물 목록을 조회합니다.")
@@ -58,15 +60,13 @@ public class PropertyController {
       List<Long> propertyIds = properties.stream()
               .map(PropertyVO::getId)
               .toList();
-
       Set<Long> favoriteIds = service.getFavoritePropertyIds(user.getId(), propertyIds);
-
       for (PropertyVO property : properties) {
         property.setIsFavorite(favoriteIds.contains(property.getId()));
       }
     }
 
-    return ResponseEntity.ok(ApiResponse.success(properties));
+    return ApiResponseUtil.ok (properties);
   }
 
   @Operation(summary = "매물 상세 조회", description = "매물 ID를 통해 상세 정보를 조회합니다.")
@@ -80,7 +80,7 @@ public class PropertyController {
       Boolean isFavorite = service.existsFavorite(user.getId(), id);
       property.setIsFavorite(isFavorite);
     }
-    return ResponseEntity.ok(ApiResponse.success(property));
+    return ApiResponseUtil.ok(property);
   }
 
   @Operation(
@@ -96,15 +96,17 @@ public class PropertyController {
           @RequestPart(value = "thumbnail", required = false) MultipartFile thumbnail) {
 
     request.setUserId(user.getId());
+
     if (thumbnail != null && !thumbnail.isEmpty()) {
       request.setThumbnail(thumbnail);
     }
+
     if (images != null && !images.isEmpty()) {
       request.setImages(images);
     }
 
-    PropertyVO property = service.updateProperty(request);
-    return ResponseEntity.ok(ApiResponse.success(property));
+    PropertyVO updated = service.updateProperty(request);
+    return ApiResponseUtil.ok( updated);
   }
 
   @Operation(
@@ -121,14 +123,14 @@ public class PropertyController {
     request.setId(id);
     request.setUserId(user.getId());
 
-    boolean result = service.deleteProperty(request);
-    return ResponseEntity.ok(ApiResponse.success(result));
+    boolean deleted = service.deleteProperty(request);
+    return ApiResponseUtil.ok(deleted);
   }
 
   @Operation(summary = "지도 영역 내 매물 조회", description = "지도의 범위 내에 위치한 매물 목록을 조회합니다.")
   @GetMapping("/withinBounds")
   public ResponseEntity<?> getPropertyWithinMap(@ModelAttribute MapBoundsRequestDto request) {
     List<PropertyVO> propertyList = service.getPropertiesWithinBounds(request);
-    return ResponseEntity.ok(ApiResponse.success(propertyList));
+    return ApiResponseUtil.ok(propertyList);
   }
 }
