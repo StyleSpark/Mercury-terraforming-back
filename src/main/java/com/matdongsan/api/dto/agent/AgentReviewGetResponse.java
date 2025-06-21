@@ -8,8 +8,11 @@ import java.time.LocalDate;
 @Getter
 @Builder
 public class AgentReviewGetResponse {
-  private String userName;
+  private Long id;
+  private Long reviewId;
+  private String profile;
+  private String name;
   private String content;
-  private Integer rate;
-  private LocalDate created_at;
+  private Double rate;
+  private LocalDate createdAt;
 }

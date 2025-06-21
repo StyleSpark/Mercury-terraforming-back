@@ -1,9 +1,6 @@
 package com.matdongsan.api.mapper;
 
-import com.matdongsan.api.dto.agent.AgentGetRequest;
-import com.matdongsan.api.dto.agent.AgentGetResponse;
-import com.matdongsan.api.dto.agent.AgentRegisterRequest;
-import com.matdongsan.api.dto.agent.AgentUpdateRequest;
+import com.matdongsan.api.dto.agent.*;
 import com.matdongsan.api.vo.AgentVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -18,9 +15,17 @@ public interface AgentMapper {
 
   Integer countAgents(AgentGetRequest request);
 
-  void insertAgent(AgentRegisterRequest request);
+  int insertAgent(AgentRegisterRequest request);
 
-  void softDeleteAgentByUserId(@Param("userId") Long userId);
+  int softDeleteAgentByUserId(@Param("userId") Long userId);
 
-  void updateAgent(@Param("request") AgentUpdateRequest request, @Param("userId") Long userId);
+  int updateAgent(@Param("request") AgentUpdateRequest request, @Param("userId") Long userId);
+
+  List<AgentGetResponse> selectPropertiesWithinBounds(AgentBoundsRequest request);
+
+  Long selectUserIdByAgentId(Long agentId);
+
+  int countPropertiesByAgent(Long userId);
+
+  boolean existAgent(AgentRegisterRequest request);
 }

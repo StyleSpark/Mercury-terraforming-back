@@ -2,16 +2,15 @@ package com.matdongsan.api.service;
 
 import com.matdongsan.api.dto.agent.*;
 import com.matdongsan.api.external.agent.verifier.AgentLicenseVerifier;
-import com.matdongsan.api.mapper.AgentMapper;
-import com.matdongsan.api.mapper.AgentReviewMapper;
-import com.matdongsan.api.mapper.ReservationMapper;
-import com.matdongsan.api.mapper.UserMapper;
+import com.matdongsan.api.mapper.*;
 import com.matdongsan.api.vo.AgentVO;
+import com.matdongsan.api.vo.PropertyVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -23,10 +22,11 @@ public class AgentService {
 
   private final AgentMapper agentMapper;
   private final UserMapper userMapper;
+  private final PropertyMapper propertyMapper;
   private final AgentLicenseVerifier licenseVerifier;
   private final ReservationMapper reservationMapper;
   private final AgentReviewMapper agentReviewMapper;
-
+  private final S3Service s3Service;
   /**
    * 중개인 단일 조회
    * @param agentId 중개인 고유 id
@@ -60,17 +60,38 @@ public class AgentService {
    * @param request AgentRegisterRequest
    * @return 중개인 등록 성공 여부
    */
-  public void registerAgent(AgentRegisterRequest request) {
-    // 중개인인지 확인 (외부 API를 호출하여 자동으로 승인하는 방향으로 설계)
+  public int registerAgent(AgentRegisterRequest request) throws Exception {
+    int result = 0;
+    // 중개인인지 확인
     if(!licenseVerifier.verify(request)) {
       throw new IllegalArgumentException("공인중개사 정보가 확인되지 않았습니다.");
     }
 
+    //이미 등록된 중개인인지 확인해야함
+    boolean isExist =agentMapper.existAgent(request);
+    if(isExist){
+      throw new IllegalArgumentException("이미 등록된 중개인입니다.");
+    }
+    // 부동산 이미지 업로드
+    // 이미 등록된 중개인인지 확인 해야함
+    
     // Agent 등록
-    agentMapper.insertAgent(request);
+    if (request.getProfileImage() != null && !request.getProfileImage().isEmpty()) {
+
+      try {
+        // key 예시: agents/11620202100167/대표이미지.jpg
+        String key = String.format("agents/%s/%s", request.getJurirno(), request.getProfileImage().getOriginalFilename());
+        String url = s3Service.uploadFile(key, request.getProfileImage());
+        request.setProfileUrl(url); // 업로드 성공 시 URL 저장
+      } catch (IOException e) {
+        throw new RuntimeException("S3 이미지 업로드 실패", e);
+      }
+    }
+    result += agentMapper.insertAgent(request);
 
     // 사용자 상태 변경
-    userMapper.updateAgentStatus(request.getUserId());
+    result += userMapper.updateAgentStatus(request.getUserId());
+    return result;
   }
 
   /**
@@ -145,5 +166,23 @@ public class AgentService {
    */
   public void deleteAgentReview(Long reviewId, Long userId) {
     agentReviewMapper.softDeleteAgentReview(reviewId, userId);
+  }
+
+  public List<AgentGetResponse> getAgentsWithinBounds(AgentBoundsRequest request) {
+    return agentMapper.selectPropertiesWithinBounds(request);
+  }
+
+
+  public Map<String, Object> getPropertiesByAgent(Long agentId, int page, int size) {
+    Long userId = agentMapper.selectUserIdByAgentId(agentId);
+    List<PropertyVO> properties = propertyMapper.selectUserProperties(userId);
+    int total = agentMapper.countPropertiesByAgent(userId);
+
+    return Map.of(
+            "properties", properties,
+            "total", total,
+            "page", page,
+            "size", size
+    );
   }
 }
