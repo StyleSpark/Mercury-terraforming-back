@@ -1,6 +1,6 @@
 package com.matdongsan.api.config;
 
-import com.matdongsan.api.security.JwtAuthenticationFilter;
+import com.matdongsan.api.filter.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
