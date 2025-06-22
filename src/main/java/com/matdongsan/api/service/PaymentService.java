@@ -5,6 +5,7 @@ import com.matdongsan.api.dto.payment.PurchaseTicketDto;
 import com.matdongsan.api.dto.reservation.ReservationConfirmDto;
 import com.matdongsan.api.dto.reservation.ReservationCreateDto;
 import com.matdongsan.api.mapper.PaymentMapper;
+import com.matdongsan.api.vo.ReservationVO;
 import com.matdongsan.api.vo.TempReservationVO;
 import com.matdongsan.api.vo.TicketVO;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +44,7 @@ public class PaymentService {
    * @param request
    * @return
    */
+  @Transactional
   public Long confirmReservation(ReservationConfirmDto request) {
     // 1. temp 조회
     TempReservationVO temp = mapper.findTempByOrderId(request.getOrderId());
@@ -50,12 +52,22 @@ public class PaymentService {
       throw new IllegalArgumentException("해당 orderId에 대한 임시 예약이 존재하지 않습니다.");
     }
 
-    // 2. 위변조 방지
+    // 2. 결제 금액 검증
     if (!temp.getDeposit().equals(request.getAmount())) {
       throw new IllegalStateException("결제 금액이 일치하지 않습니다.");
     }
 
-    // 3. reservations insert
+    // 3. 동시성 제어 – 예약 중복 검사 with FOR UPDATE
+    ReservationVO existing = mapper.checkReservationConflictForUpdate(
+            temp.getPropertyId(),
+            temp.getReservedDate(),
+            temp.getReservedTime()
+    );
+    if (existing != null) {
+      throw new IllegalStateException("이미 해당 시간에 예약이 존재합니다.");
+    }
+
+    // 4. reservations insert
     ReservationCreateDto reservation = new ReservationCreateDto();
     reservation.setOrderId(temp.getOrderId());
     reservation.setUserId(temp.getUserId());
@@ -67,7 +79,7 @@ public class PaymentService {
 
     mapper.insertConfirmedReservation(reservation);
 
-    // 4. payments insert
+    // 5. payments insert
     PaymentCreateDto payment = new PaymentCreateDto();
     payment.setOrderId(temp.getOrderId());
     payment.setUserId(temp.getUserId());
@@ -78,11 +90,12 @@ public class PaymentService {
 
     mapper.insertPaymentHistory(payment);
 
-    // 5. temp 삭제
+    // 6. temp 삭제
     mapper.deleteTempByOrderId(request.getOrderId());
 
     return reservation.getId();
   }
+
 
   /**
    * OrderId uuid 생성기

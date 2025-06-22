@@ -145,5 +145,38 @@
         )
     </update>
 
+    <select id="checkReservationConflictForUpdate" resultType="com.matdongsan.api.vo.ReservationVO">
+        SELECT * FROM reservations
+        WHERE property_id = #{propertyId}
+        AND reserved_date = #{reservedDate}
+        AND reserved_time = #{reservedTime}
+        FOR UPDATE
+        LIMIT 1
+    </select>
 
+<!--    동시성 테스트를 위해서 작성된 쿼리들-->
+    <select id="countReservationsByPropertyAndTime" resultType="int">
+        SELECT COUNT(*) FROM reservations
+        WHERE property_id = #{propertyId}
+        AND reserved_date = CAST(#{reservedDate} AS DATE)
+        AND reserved_time = CAST(#{reservedTime} AS TIME)
+    </select>
+
+    <insert id="insertTempReservationForTest">
+        INSERT INTO temp_reservation (
+        order_id, property_id, user_id,
+        reserved_date, reserved_time,
+        deposit, info, status, created_at
+        )
+        VALUES (
+        #{orderId}, #{propertyId}, #{userId},
+        #{reservedDate}, #{reservedTime},
+        #{deposit}, #{info}, 'TEMP', NOW()
+        )
+    </insert>
+
+    <delete id="deleteTestReservations">
+        DELETE FROM temp_reservation WHERE order_id = #{orderId};
+        DELETE FROM reservations WHERE order_id = #{orderId};
+    </delete>
 </mapper>
