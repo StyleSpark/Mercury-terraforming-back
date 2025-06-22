@@ -1,6 +1,7 @@
 package com.matdongsan.api.mapper;
 
 import com.matdongsan.api.dto.agent.*;
+import com.matdongsan.api.vo.AgentMarkVO;
 import com.matdongsan.api.vo.AgentVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -21,11 +22,17 @@ public interface AgentMapper {
 
   int updateAgent(@Param("request") AgentUpdateRequest request, @Param("userId") Long userId);
 
-  List<AgentGetResponse> selectPropertiesWithinBounds(AgentBoundsRequest request);
+  List<AgentGetResponse> selectagentsWithinBounds(AgentBoundsRequest request);
 
   Long selectUserIdByAgentId(Long agentId);
 
   int countPropertiesByAgent(Long userId);
 
   boolean existAgent(AgentRegisterRequest request);
+
+  List<AgentMarkVO> selectAgentMarkersWithinBounds(AgentBoundsRequest request);
+
+  List<AgentGetResponse> selectAgentListWithinBounds(AgentGetRequest request);
+
+  int countAgentListWithinBounds(AgentGetRequest request);
 }

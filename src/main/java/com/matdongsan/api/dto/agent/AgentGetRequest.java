@@ -33,6 +33,18 @@ public class AgentGetRequest {
   @Schema(description = "검색 반경 (단위: km)", example = "2.0")
   private Double radius;
 
+  @Schema(description = "남서쪽 위도 (지도 BoundingBox 필터용)", example = "37.560")
+  private Double swLat;
+
+  @Schema(description = "남서쪽 경도 (지도 BoundingBox 필터용)", example = "126.970")
+  private Double swLng;
+
+  @Schema(description = "북동쪽 위도 (지도 BoundingBox 필터용)", example = "37.570")
+  private Double neLat;
+
+  @Schema(description = "북동쪽 경도 (지도 BoundingBox 필터용)", example = "126.980")
+  private Double neLng;
+
   @Schema(description = "페이지 번호 (기본값: 1)", example = "1")
   private int page = 1;
 

@@ -4,6 +4,7 @@ import com.matdongsan.api.dto.ApiResponse;
 import com.matdongsan.api.dto.agent.*;
 import com.matdongsan.api.security.UserRole;
 import com.matdongsan.api.service.AgentService;
+import com.matdongsan.api.vo.AgentMarkVO;
 import com.matdongsan.api.vo.AgentVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -36,9 +37,9 @@ public class AgentController {
 
   @Operation(summary = "지도 범위 내 중개인 조회", description = "지도의 현재 뷰 영역(bounding box) 안에 존재하는 중개인 목록을 조회합니다.")
   @GetMapping("/withinBounds")
-  public ResponseEntity<?> getAgentsWithinBounds(@ModelAttribute AgentBoundsRequest request) {
-    List<AgentGetResponse> agents = service.getAgentsWithinBounds(request);
-    return ResponseEntity.ok(ApiResponse.success(agents));
+  public ResponseEntity<?> getAgentListWithinBounds(@ParameterObject AgentGetRequest request) {
+    Map<String, Object> response = service.getAgentListWithinBounds(request);
+    return ResponseEntity.ok(ApiResponse.success(response));
   }
 
   @Operation(summary = "중개인 단일 조회", description = "중개인 ID를 통해 해당 중개인의 상세 정보를 조회합니다.")
@@ -155,5 +156,13 @@ public class AgentController {
     service.updateAgent(request, user.getId());
     return ResponseEntity.ok(ApiResponse.success("중개인 정보가 수정되었습니다."));
   }
+
+  @Operation(summary = "지도 클러스터 마커 조회")
+  @GetMapping("/markers")
+  public ResponseEntity<?> getAgentMarkersWithinBounds(@ModelAttribute AgentBoundsRequest request) {
+    List<AgentMarkVO> markers = service.getAgentMarkersWithinBounds(request);
+    return ResponseEntity.ok(ApiResponse.success(markers));
+  }
+
 
 }

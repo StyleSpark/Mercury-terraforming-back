@@ -22,74 +22,143 @@
            AND a.user_id = u.id
     </select>
 
-    <select id="selectAgents"
-            parameterType="com.matdongsan.api.dto.agent.AgentGetRequest"
-            resultType="com.matdongsan.api.dto.agent.AgentGetResponse">
-        SELECT a.id,
-        u.name,
-        u.profile AS profileUrl,
-        u.phone,
-        u.temperature,
-        u.nickname,
-        a.profile_url AS thumbnail,
-        a.brand,
-        a.address || ' ' || a.address_detail AS address,
-        a.review_count,
-        a.review_avg,
-        a.latitude,
-        a.longitude,
-        CASE
-        WHEN #{latitude} IS NOT NULL AND #{longitude} IS NOT NULL THEN
-        6371 * acos(
-        cos(radians(#{latitude}))
-        * cos(radians(a.latitude))
-        * cos(radians(a.longitude) - radians(#{longitude}))
-        + sin(radians(#{latitude})) * sin(radians(a.latitude))
-        )
-        ELSE NULL
-        END AS distance
+<!--    이전 성능 개선 전 쿼리-->
+<!--    <select id="selectAgents"-->
+<!--            parameterType="com.matdongsan.api.dto.agent.AgentGetRequest"-->
+<!--            resultType="com.matdongsan.api.dto.agent.AgentGetResponse">-->
+<!--        SELECT a.id,-->
+<!--        u.name,-->
+<!--        u.profile AS profileUrl,-->
+<!--        u.phone,-->
+<!--        u.temperature,-->
+<!--        u.nickname,-->
+<!--        a.profile_url AS thumbnail,-->
+<!--        a.brand,-->
+<!--        a.address || ' ' || a.address_detail AS address,-->
+<!--        a.review_count,-->
+<!--        a.review_avg,-->
+<!--        a.latitude,-->
+<!--        a.longitude,-->
+<!--        CASE-->
+<!--        WHEN #{latitude} IS NOT NULL AND #{longitude} IS NOT NULL THEN-->
+<!--        6371 * acos(-->
+<!--        cos(radians(#{latitude}))-->
+<!--        * cos(radians(a.latitude))-->
+<!--        * cos(radians(a.longitude) - radians(#{longitude}))-->
+<!--        + sin(radians(#{latitude})) * sin(radians(a.latitude))-->
+<!--        )-->
+<!--        ELSE NULL-->
+<!--        END AS distance-->
+<!--        FROM agents a-->
+<!--        INNER JOIN users u ON a.user_id = u.id-->
+<!--        WHERE u.deleted_at IS NULL-->
+<!--          AND u.role ='AGENT'-->
+
+<!--        <if test="propertyName != null and propertyName != ''">-->
+<!--            AND EXISTS (-->
+<!--            SELECT 1 FROM properties p-->
+<!--            WHERE p.user_id = u.id-->
+<!--            AND p.title LIKE CONCAT('%', #{propertyName}, '%')-->
+<!--            )-->
+<!--        </if>-->
+
+<!--        <if test="propertyType != null and propertyType != ''">-->
+<!--            AND EXISTS (-->
+<!--            SELECT 1 FROM properties p-->
+<!--            WHERE p.user_id = u.id-->
+<!--            AND p.category LIKE CONCAT('%', #{propertyType}, '%')-->
+<!--            )-->
+<!--        </if>-->
+
+<!--        <if test="agentName != null and agentName != ''">-->
+<!--            AND u.name LIKE CONCAT('%', #{agentName}, '%')-->
+<!--        </if>-->
+
+<!--        <if test="brandName != null and brandName != ''">-->
+<!--            AND a.brand LIKE CONCAT('%', #{brandName}, '%')-->
+<!--        </if>-->
+
+<!--        &lt;!&ndash; 위치 기반 필터링 &ndash;&gt;-->
+<!--        <if test="latitude != null and longitude != null and radius != null">-->
+<!--            AND 6371 * acos(-->
+<!--            cos(radians(#{latitude}))-->
+<!--            * cos(radians(a.latitude))-->
+<!--            * cos(radians(a.longitude) - radians(#{longitude}))-->
+<!--            + sin(radians(#{latitude})) * sin(radians(a.latitude))-->
+<!--            ) &lt;= #{radius}-->
+<!--        </if>-->
+
+<!--        ORDER BY a.created_at DESC-->
+<!--        LIMIT 10-->
+<!--&lt;!&ndash;        LIMIT #{size} OFFSET #{offset}&ndash;&gt;-->
+<!--    </select>-->
+<!--    성능 개선 후 쿼리-->
+    <select id="selectAgentListWithinBounds"
+            resultType="com.matdongsan.api.dto.agent.AgentGetResponse"
+            parameterType="com.matdongsan.api.dto.agent.AgentGetRequest">
+        SELECT
+        <trim suffixOverrides=",">
+            a.id,
+            u.name,
+            u.profile AS profileUrl,
+            u.phone,
+            u.temperature,
+            u.nickname,
+            a.profile_url AS thumbnail,
+            a.brand,
+            a.address || ' ' || a.address_detail AS address,
+            a.review_count,
+            a.review_avg,
+            a.latitude,
+            a.longitude
+        </trim>
         FROM agents a
         INNER JOIN users u ON a.user_id = u.id
         WHERE u.deleted_at IS NULL
-          AND u.role ='AGENT'
 
-        <if test="propertyName != null and propertyName != ''">
-            AND EXISTS (
-            SELECT 1 FROM properties p
-            WHERE p.user_id = u.id
-            AND p.title LIKE CONCAT('%', #{propertyName}, '%')
+        <!-- PostGIS 기반 위치 필터링 -->
+        <if test="swLat != null and swLng != null and neLat != null and neLng != null">
+            AND location &amp;&amp; ST_MakeEnvelope(
+            #{swLng}, #{swLat},
+            #{neLng}, #{neLat},
+            4326
             )
-        </if>
-
-        <if test="propertyType != null and propertyType != ''">
-            AND EXISTS (
-            SELECT 1 FROM properties p
-            WHERE p.user_id = u.id
-            AND p.category LIKE CONCAT('%', #{propertyType}, '%')
-            )
-        </if>
-
-        <if test="agentName != null and agentName != ''">
-            AND u.name LIKE CONCAT('%', #{agentName}, '%')
-        </if>
-
-        <if test="brandName != null and brandName != ''">
-            AND a.brand LIKE CONCAT('%', #{brandName}, '%')
-        </if>
-
-        <!-- 위치 기반 필터링 -->
-        <if test="latitude != null and longitude != null and radius != null">
-            AND 6371 * acos(
-            cos(radians(#{latitude}))
-            * cos(radians(a.latitude))
-            * cos(radians(a.longitude) - radians(#{longitude}))
-            + sin(radians(#{latitude})) * sin(radians(a.latitude))
-            ) &lt;= #{radius}
         </if>
 
         ORDER BY a.created_at DESC
         LIMIT #{size} OFFSET #{offset}
     </select>
+
+    <select id="selectAgentMarkersWithinBounds" resultType="com.matdongsan.api.vo.AgentMarkVO">
+        SELECT id, latitude, longitude
+        FROM agents
+        WHERE deleted_at IS NULL
+        AND location &amp;&amp; ST_MakeEnvelope(
+        #{swLng}, #{swLat},
+        #{neLng}, #{neLat},
+        4326
+        )
+    </select>
+
+
+    <select id="countAgentListWithinBounds" resultType="int" parameterType="com.matdongsan.api.dto.agent.AgentGetRequest">
+        SELECT COUNT(*)
+        FROM agents a
+        INNER JOIN users u ON a.user_id = u.id
+        WHERE u.deleted_at IS NULL
+
+        <!-- PostGIS 기반 위치 필터링 -->
+        <if test="swLat != null and swLng != null and neLat != null and neLng != null">
+            AND location &amp;&amp; ST_MakeEnvelope(
+            #{swLng}, #{swLat},
+            #{neLng}, #{neLat},
+            4326
+            )
+        </if>
+
+    </select>
+
+
     <select id="countAgents" parameterType="com.matdongsan.api.dto.agent.AgentGetRequest" resultType="java.lang.Integer">
         SELECT COUNT(*)
           FROM agents a
@@ -171,7 +240,7 @@
            AND deleted_at IS NULL
     </update>
 
-    <select id="selectPropertiesWithinBounds"
+    <select id="selectagentsWithinBounds"
             parameterType="com.matdongsan.api.dto.agent.AgentBoundsRequest"
             resultType="com.matdongsan.api.dto.agent.AgentGetResponse">
         SELECT a.id, a.latitude, a.longitude, a.brand, a.address, u.nickname, u.profile as profileUrl,
