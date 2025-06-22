@@ -1,6 +1,7 @@
 package com.matdongsan.api.mapper;
 
 import com.matdongsan.api.dto.property.*;
+import com.matdongsan.api.vo.PropertyMarkerVO;
 import com.matdongsan.api.vo.PropertyVO;
 import com.matdongsan.api.vo.Tag;
 import org.apache.ibatis.annotations.Mapper;
@@ -43,4 +44,8 @@ public interface PropertyMapper {
   List<Tag> getTagsByPropertyId(Long propertyId);
 
   List<PropertyVO> selectPropertiesWithinBounds(MapBoundsRequestDto request);
+
+  int countPropertiesWithinBounds(MapBoundsRequestDto request);
+
+  List<PropertyMarkerVO> selectPropertyMarkersWithinBounds(MapBoundsRequestDto request);
 }

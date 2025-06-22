@@ -19,4 +19,14 @@ public class MapBoundsRequestDto {
 
   @Schema(description = "북동쪽 경도", example = "126.9900")
   private Double neLng;
+
+  @Schema(description = "페이지 번호 (1부터 시작)", example = "1")
+  private int page = 1;
+
+  @Schema(description = "한 페이지에 가져올 데이터 개수", example = "10")
+  private int size = 10;
+
+  public int getOffset() {
+    return (page - 1) * size;
+  }
 }

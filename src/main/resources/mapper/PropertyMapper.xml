@@ -96,6 +96,7 @@
             )) &lt;= #{radius}
         </if>
         ORDER BY p.id DESC
+        LIMIT 10
     </select>
 
     <select id="selectPropertyById" parameterType="java.lang.Long" resultType="com.matdongsan.api.vo.PropertyVO">
@@ -275,8 +276,44 @@
             ,p.bathroom_count
         FROM properties p
         INNER JOIN users u ON p.user_id = u.id
-        WHERE latitude BETWEEN #{swLat} AND #{neLat}
-        AND longitude BETWEEN #{swLng} AND #{neLng}
-        AND P.deleted_at IS NULL
+        WHERE u.deleted_at IS NULL
+        AND location &amp;&amp; ST_MakeEnvelope(
+        #{swLng}, #{swLat},
+        #{neLng}, #{neLat},
+        4326
+        )
+        AND p.deleted_at IS NULL
+        ORDER BY p.created_at DESC
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="countPropertiesWithinBounds"
+            parameterType="com.matdongsan.api.dto.property.MapBoundsRequestDto"
+            resultType="int">
+        SELECT COUNT(*)
+        FROM properties p
+        INNER JOIN users u ON p.user_id = u.id
+        WHERE u.deleted_at IS NULL
+        AND location &amp;&amp; ST_MakeEnvelope(
+        #{swLng}, #{swLat},
+        #{neLng}, #{neLat},
+        4326
+        )
+        AND p.deleted_at IS NULL
+    </select>
+
+    <select id="selectPropertyMarkersWithinBounds"
+            parameterType="com.matdongsan.api.dto.property.MapBoundsRequestDto"
+            resultType="com.matdongsan.api.vo.PropertyMarkerVO">
+        SELECT
+        p.id,
+        p.latitude,
+        p.longitude,
+        p.price,
+        p.thumbnail_url
+        FROM properties p
+        WHERE p.latitude BETWEEN #{swLat} AND #{neLat}
+        AND p.longitude BETWEEN #{swLng} AND #{neLng}
+        AND p.deleted_at IS NULL
     </select>
 </mapper>

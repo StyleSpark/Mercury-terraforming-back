@@ -4,6 +4,7 @@ import com.matdongsan.api.dto.ApiResponse;
 import com.matdongsan.api.dto.property.*;
 import com.matdongsan.api.security.UserRole;
 import com.matdongsan.api.service.PropertyService;
+import com.matdongsan.api.vo.PropertyMarkerVO;
 import com.matdongsan.api.vo.PropertyVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @RestController
@@ -128,7 +130,14 @@ public class PropertyController {
   @Operation(summary = "지도 영역 내 매물 조회", description = "지도의 범위 내에 위치한 매물 목록을 조회합니다.")
   @GetMapping("/withinBounds")
   public ResponseEntity<?> getPropertyWithinMap(@ModelAttribute MapBoundsRequestDto request) {
-    List<PropertyVO> propertyList = service.getPropertiesWithinBounds(request);
-    return ResponseEntity.ok(ApiResponse.success(propertyList));
+    Map<String, Object> data = service.getPropertiesWithinBounds(request);
+    return ResponseEntity.ok(ApiResponse.success(data));
+  }
+
+  @Operation(summary = "지도 영역 내 매물 마커만 조회", description = "지도에 마커로 표시할 최소한의 매물 정보만 조회합니다.")
+  @GetMapping("/markers")
+  public ResponseEntity<?> getPropertyMarkers(@ModelAttribute MapBoundsRequestDto request) {
+    List<PropertyMarkerVO> markers = service.getPropertyMarkersWithinBounds(request);
+    return ResponseEntity.ok(ApiResponse.success(markers));
   }
 }
