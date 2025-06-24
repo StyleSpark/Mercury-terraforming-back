@@ -40,9 +40,9 @@ public interface PaymentMapper {
 
   int consumeTicket(Long userId);
 
-  ReservationVO checkReservationConflictForUpdate(@Param("propertyId") Long propertyId,
-                                                  @Param("reservedDate") LocalDate reservedDate,
-                                                  @Param("reservedTime") LocalTime reservedTime);
+//  ReservationVO checkReservationConflictForUpdate(@Param("propertyId") Long propertyId,
+//                                                  @Param("reservedDate") LocalDate reservedDate,
+//                                                  @Param("reservedTime") LocalTime reservedTime);
 
   //for Test
   int countReservationsByPropertyAndTime(

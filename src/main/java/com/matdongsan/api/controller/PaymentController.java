@@ -43,7 +43,7 @@ public class PaymentController {
 
   @Operation(
           summary = "예약 확정 및 결제 완료 처리",
-          description = "결제가 완료되면 임시 예약을 확정하고 예약 ID를 반환합니다. 동시성 제어 고려 필요."
+          description = "결제가 완료되면 임시 예약을 확정하고 예약 ID를 반환합니다. (비관적 락으로 동시성 제어)"
   )
   @PostMapping("/reservationConfirm")
   public ResponseEntity<?> confirmReservation(

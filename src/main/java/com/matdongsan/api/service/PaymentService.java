@@ -9,6 +9,7 @@ import com.matdongsan.api.vo.ReservationVO;
 import com.matdongsan.api.vo.TempReservationVO;
 import com.matdongsan.api.vo.TicketVO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,17 +58,7 @@ public class PaymentService {
       throw new IllegalStateException("결제 금액이 일치하지 않습니다.");
     }
 
-    // 3. 동시성 제어 – 예약 중복 검사 with FOR UPDATE
-    ReservationVO existing = mapper.checkReservationConflictForUpdate(
-            temp.getPropertyId(),
-            temp.getReservedDate(),
-            temp.getReservedTime()
-    );
-    if (existing != null) {
-      throw new IllegalStateException("이미 해당 시간에 예약이 존재합니다.");
-    }
-
-    // 4. reservations insert
+    // 3. reservations insert
     ReservationCreateDto reservation = new ReservationCreateDto();
     reservation.setOrderId(temp.getOrderId());
     reservation.setUserId(temp.getUserId());
@@ -77,9 +68,13 @@ public class PaymentService {
     reservation.setReservedTime(temp.getReservedTime());
     reservation.setDeposit(temp.getDeposit());
 
-    mapper.insertConfirmedReservation(reservation);
+    try {
+      mapper.insertConfirmedReservation(reservation);
+    } catch (DuplicateKeyException e) {
+      throw new IllegalStateException("이미 해당 시간에 예약이 존재합니다.");
+    }
 
-    // 5. payments insert
+    // 4. payments insert
     PaymentCreateDto payment = new PaymentCreateDto();
     payment.setOrderId(temp.getOrderId());
     payment.setUserId(temp.getUserId());
@@ -90,7 +85,7 @@ public class PaymentService {
 
     mapper.insertPaymentHistory(payment);
 
-    // 6. temp 삭제
+    // 5. temp 삭제
     mapper.deleteTempByOrderId(request.getOrderId());
 
     return reservation.getId();
