@@ -10,6 +10,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
@@ -60,42 +64,58 @@ public class AgentService {
   }
 
   /**
-   * 중개인 등록 (회원 -> 중개인 전환)
-   *
-   * @param request AgentRegisterRequest
-   * @return 중개인 등록 성공 여부
+   * 중개인 등록
+   * @param request
+   * @return
+   * @throws Exception
    */
+  @Transactional
   public int registerAgent(AgentRegisterRequest request) throws Exception {
     int result = 0;
-    // 중개인인지 확인
+
+    // 자격 검증
     if (!licenseVerifier.verify(request)) {
       throw new IllegalArgumentException("공인중개사 정보가 확인되지 않았습니다.");
     }
 
-    //이미 등록된 중개인인지 확인해야함
-    boolean isExist = agentMapper.existAgent(request);
-    if (isExist) {
+    // 중복 검증
+    if (agentMapper.existAgent(request)) {
       throw new IllegalArgumentException("이미 등록된 중개인입니다.");
     }
-    // 부동산 이미지 업로드
-    // 이미 등록된 중개인인지 확인 해야함
 
-    // Agent 등록
-    if (request.getProfileImage() != null && !request.getProfileImage().isEmpty()) {
+    // 업로드 관련 변수 준비 (아직 업로드는 안함)
+    String imageKey = null;
+    MultipartFile imageFile = request.getProfileImage();
 
-      try {
-        // key 예시: agents/11620202100167/대표이미지.jpg
-        String key = String.format("agents/%s/%s", request.getJurirno(), request.getProfileImage().getOriginalFilename());
-        String url = s3Service.uploadFile(key, request.getProfileImage());
-        request.setProfileUrl(url); // 업로드 성공 시 URL 저장
-      } catch (IOException e) {
-        throw new RuntimeException("S3 이미지 업로드 실패", e);
-      }
+    if (imageFile != null && !imageFile.isEmpty()) {
+      imageKey = String.format("agents/%s/%s", request.getJurirno(), imageFile.getOriginalFilename());
+      // S3 URL만 미리 설정
+      String previewUrl = s3Service.getFileUrl(imageKey);
+      request.setProfileUrl(previewUrl);
     }
-    result += agentMapper.insertAgent(request);
 
-    // 사용자 상태 변경
+    // DB 작업
+    result += agentMapper.insertAgent(request);
     result += userMapper.updateAgentStatus(request.getUserId());
+
+    // 트랜잭션이 성공(commit)된 경우에만 업로드
+    if (imageKey != null) {
+      String finalKey = imageKey;
+      byte[] fileBytes = imageFile.getBytes();
+      String contentType = imageFile.getContentType();
+
+      TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+        @Override
+        public void afterCommit() {
+          try {
+            s3Service.uploadBytes(finalKey, fileBytes, contentType);
+          } catch (Exception e) {
+            log.error("S3 업로드 실패: {}", finalKey, e);
+          }
+        }
+      });
+    }
+
     return result;
   }
 

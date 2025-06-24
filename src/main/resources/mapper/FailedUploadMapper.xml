@@ -1,0 +1,15 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matdongsan.api.mapper.FailedUploadMapper">
+    <insert id="insertFailedUpload" parameterType="com.matdongsan.api.vo.FailedUploadVO">
+        INSERT INTO failed_upload (property_id, key, url, content_type, file_data)
+        VALUES (#{propertyId}, #{key}, #{url}, #{contentType}, #{fileData})
+    </insert>
+
+    <select id="selectAll" resultType="com.matdongsan.api.vo.FailedUploadVO">
+        SELECT * FROM failed_upload
+    </select>
+
+    <delete id="deleteById">
+        DELETE FROM failed_upload WHERE id = #{id}
+    </delete>
+</mapper>

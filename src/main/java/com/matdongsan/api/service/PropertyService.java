@@ -1,6 +1,7 @@
 package com.matdongsan.api.service;
 
 import com.matdongsan.api.dto.property.*;
+import com.matdongsan.api.dto.upload.DeferredUpload;
 import com.matdongsan.api.mapper.PaymentMapper;
 import com.matdongsan.api.mapper.PropertyDetailMapper;
 import com.matdongsan.api.mapper.PropertyImagesMapper;
@@ -9,13 +10,18 @@ import com.matdongsan.api.vo.PropertyMarkerVO;
 import com.matdongsan.api.vo.PropertyVO;
 import com.matdongsan.api.vo.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
 @Service
+@Slf4j
 @RequiredArgsConstructor
 @Transactional(rollbackFor = Exception.class)
 public class PropertyService {
@@ -26,6 +32,7 @@ public class PropertyService {
   private final PaymentMapper paymentMapper;
   private final S3Service s3Service;
   private final ImageConversionService imageConversionService;
+  private final AsyncImageUploader asyncImageUploader;
 
   public Long createProperty(PropertyCreateRequest request) {
     consumeTicket(request.getUserId());
@@ -99,17 +106,29 @@ public class PropertyService {
 
   private void handleThumbnailUpload(PropertyCreateRequest request) {
     MultipartFile thumbnail = request.getThumbnail();
-    if (thumbnail != null && !thumbnail.isEmpty()) {
-      try {
-        byte[] data = imageConversionService.convertToWebP(thumbnail);
-        String key = "properties/temp_" + System.currentTimeMillis() + "_thumb.webp";
-        String url = s3Service.uploadBytes(key, data, "image/webp");
-        request.setThumbnailUrl(url);
-      } catch (Exception e) {
-        throw new RuntimeException("썸네일 업로드 실패", e);
-      }
+    if (thumbnail == null || thumbnail.isEmpty()) return;
+
+    try {
+      byte[] data = imageConversionService.convertToWebP(thumbnail);
+      String key = "properties/temp_" + System.currentTimeMillis() + "_thumb.webp";
+      String url = s3Service.getFileUrl(key); // 실제 업로드는 나중에
+      request.setThumbnailUrl(url);
+
+      TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+        @Override
+        public void afterCommit() {
+          try {
+            s3Service.uploadBytes(key, data, "image/webp");
+          } catch (Exception e) {
+            log.error("썸네일 S3 업로드 실패: {}", key, e);
+          }
+        }
+      });
+    } catch (Exception e) {
+      throw new RuntimeException("썸네일 변환 실패", e);
     }
   }
+
 
   private void insertPropertyAndDetails(PropertyCreateRequest request) {
     mapper.insertProperty(request);
@@ -125,20 +144,45 @@ public class PropertyService {
     List<MultipartFile> images = request.getImages();
     if (images == null || images.isEmpty()) return;
 
+    if (request.getImageUrls() == null) {
+      request.setImageUrls(new ArrayList<>());
+    }
+
+    List<DeferredUpload> uploadQueue = new ArrayList<>();
+
     for (MultipartFile image : images) {
       try {
         byte[] data = imageConversionService.convertToWebP(image);
-        String key = "properties/" + request.getId() + "_" + System.currentTimeMillis() + ".webp";
-        String url = s3Service.uploadBytes(key, data, "image/webp");
+        String key = "properties/" + request.getId() + "_" + UUID.randomUUID() + ".webp";
+        String url = s3Service.getFileUrl(key);
+
         if (imagesMapper.insertPropertyImage(request.getId(), url) != 1) {
-          throw new RuntimeException("이미지 저장 실패: " + url);
+          throw new RuntimeException("이미지 URL 저장 실패: " + url);
         }
+
+        uploadQueue.add(DeferredUpload.forInsert(request.getId(), key, data, "image/webp", url));
         request.getImageUrls().add(url);
+
       } catch (Exception e) {
-        throw new RuntimeException("이미지 업로드 실패", e);
+        log.error("이미지 처리 중 오류 발생", e);
+        throw new RuntimeException("이미지 처리 실패", e);
       }
     }
+
+    if (TransactionSynchronizationManager.isSynchronizationActive()) {
+      TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+        @Override
+        public void afterCommit() {
+          for (DeferredUpload upload : uploadQueue) {
+            asyncImageUploader.upload(upload);
+          }
+        }
+      });
+    } else {
+      log.warn("트랜잭션 미활성화 상태에서 이미지 업로드 로직 호출됨");
+    }
   }
+
 
   private void handleTags(List<String> tagNames, Long propertyId) {
     if (tagNames == null || tagNames.isEmpty()) return;
@@ -174,18 +218,36 @@ public class PropertyService {
   }
 
   private void handleThumbnailUpdate(PropertyUpdateRequest request) {
-    if (request.getThumbnail() == null || request.getThumbnail().isEmpty()) return;
-    s3Service.deleteByUrl(request.getThumbnailUrl());
+    MultipartFile newThumbnail = request.getThumbnail();
+    if (newThumbnail == null || newThumbnail.isEmpty()) return;
 
     try {
-      byte[] data = imageConversionService.convertToWebP(request.getThumbnail());
-      String key = "properties/temp_" + System.currentTimeMillis() + "_thumb.webp";
-      String url = s3Service.uploadBytes(key, data, "image/webp");
-      request.setThumbnailUrl(url);
+      byte[] data = imageConversionService.convertToWebP(newThumbnail);
+      String key = "properties/temp_" + UUID.randomUUID() + "_thumb.webp";
+      String newUrl = s3Service.getFileUrl(key);
+      String oldUrl = request.getThumbnailUrl();
+
+      request.setThumbnailUrl(newUrl); // DB에 새 URL 저장
+
+      DeferredUpload upload = DeferredUpload.forUpdate(key, data, "image/webp", newUrl, oldUrl);
+
+      if (TransactionSynchronizationManager.isSynchronizationActive()) {
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+          @Override
+          public void afterCommit() {
+            asyncImageUploader.upload(upload);
+          }
+        });
+      } else {
+        log.warn("트랜잭션이 비활성 상태에서 썸네일 업로드 수행됨");
+      }
+
     } catch (Exception e) {
-      throw new RuntimeException("썸네일 업로드 실패", e);
+      throw new RuntimeException("썸네일 변환 실패", e);
     }
   }
+
+
 
   private void updatePropertyAndDetails(PropertyUpdateRequest request) {
     if (mapper.updateProperty(request) != 1) {
@@ -207,21 +269,43 @@ public class PropertyService {
       imagesMapper.softDeleteImageUrl(request.getId(), url);
     }
 
-    if (request.getImages() != null) {
+    if (request.getImages() != null && !request.getImages().isEmpty()) {
+      List<DeferredUpload> uploadQueue = new ArrayList<>();
+
       for (MultipartFile image : request.getImages()) {
         try {
           byte[] data = imageConversionService.convertToWebP(image);
-          String key = "properties/" + request.getId() + "_" + System.currentTimeMillis() + ".webp";
-          String url = s3Service.uploadBytes(key, data, "image/webp");
+          String key = "properties/" + request.getId() + "_" + UUID.randomUUID() + ".webp";
+          String url = s3Service.getFileUrl(key);
+
           if (imagesMapper.insertPropertyImage(request.getId(), url) != 1) {
-            throw new RuntimeException("이미지 저장 실패: " + url);
+            throw new RuntimeException("이미지 URL 저장 실패: " + url);
           }
+
+          uploadQueue.add(DeferredUpload.forInsert(request.getId(), key, data, "image/webp", url));
+          request.getImageUrls().add(url);
+
         } catch (Exception e) {
-          throw new RuntimeException("이미지 업로드 실패", e);
+          log.error("이미지 업로드 준비 중 오류 발생", e);
+          throw new RuntimeException("이미지 처리 실패", e);
         }
+      }
+
+      if (TransactionSynchronizationManager.isSynchronizationActive()) {
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+          @Override
+          public void afterCommit() {
+            for (DeferredUpload upload : uploadQueue) {
+              asyncImageUploader.upload(upload);
+            }
+          }
+        });
+      } else {
+        log.warn("이미지 수정 시 트랜잭션이 활성화되어 있지 않음");
       }
     }
   }
+
 
   private void handleTagsUpdate(PropertyUpdateRequest request) {
     List<String> names = request.getTags().stream().map(Tag::getName).toList();
