@@ -5,22 +5,44 @@ import com.matdongsan.api.dto.community.*;
 import com.matdongsan.api.dto.reaction.ReactionRequest;
 import com.matdongsan.api.security.UserRole;
 import com.matdongsan.api.service.CommunityService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/communities")
 @RequiredArgsConstructor
-@Slf4j
+@Tag(name = "커뮤니티 API", description = "커뮤니티 게시글 등록/조회/수정/삭제 API")
 public class CommnunityController {
 
   private final CommunityService service;
+
+  @Operation(summary = "커뮤니티 게시글 등록",
+          description = "커뮤니티 게시글을 등록합니다. JWT 인증 필요",
+          security = @SecurityRequirement(name = "JWT"))
+  @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<?> createCommunity(
+          @RequestPart("request") CommunityCreateRequest request,
+          @RequestPart(value = "images", required = false) List<MultipartFile> images,
+          @Parameter(hidden = true) @AuthenticationPrincipal UserRole user) {
+
+    Long loginUserId = user.getId();
+    Long id = service.createCommunity(request, images, loginUserId);
+    return ResponseEntity
+            .status(HttpStatus.CREATED)
+            .body(ApiResponse.success(201, id));
+  }
 
   /**
    * 커뮤니티 단일 조회
@@ -48,21 +70,6 @@ public class CommnunityController {
     Long loginUserId = user != null ? user.getId() : null;
     Map<String, Object> response = service.getCommunityListWithPagination(request, loginUserId);
     return ResponseEntity.ok(ApiResponse.success(response));
-  }
-
-  /**
-   * 커뮤니티 등록
-   * @param request 등록할 커뮤니티 데이터
-   * @return 등록 결과
-   */
-  @PostMapping
-  public ResponseEntity<?> createCommunity(@RequestBody CommunityCreateRequest request) {
-    // TODO: 사용자 정보 구현 -> 요청 JSON 수정 필요 (임시)
-    // TODO: 카테고리 등록 구현 -> '자취 후기', '매물 후기', '꿀팁 공유', '질문 있어요'
-    Long communityId = service.createCommunity(request);
-    return ResponseEntity
-            .status(HttpStatus.CREATED)
-            .body(ApiResponse.success(201, communityId));
   }
 
   /**

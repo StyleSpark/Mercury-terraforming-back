@@ -3,6 +3,7 @@ package com.matdongsan.api.service;
 import com.matdongsan.api.dto.community.*;
 import com.matdongsan.api.dto.reaction.ReactionRequest;
 import com.matdongsan.api.mapper.CommunityCommentMapper;
+import com.matdongsan.api.mapper.CommunityImagesMapper;
 import com.matdongsan.api.mapper.CommunityMapper;
 import com.matdongsan.api.mapper.ReactionMapper;
 import com.matdongsan.api.vo.CommunityVO;
@@ -10,12 +11,9 @@ import com.matdongsan.api.vo.ReactionVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +23,48 @@ public class CommunityService {
   private final CommunityMapper communityMapper;
   private final ReactionMapper reactionMapper;
   private final CommunityCommentMapper communityCommentMapper;
+  private final CommunityImagesMapper communityImagesMapper;
+
+  private final ImageConversionService imageConversionService;
+  private final S3Service s3Service;
+
+  public Long createCommunity(
+          CommunityCreateRequest request,
+          List<MultipartFile> images,
+          Long loginUserId) {
+
+    if (loginUserId == null) {
+      throw new RuntimeException("로그인을 하셔야 게시물 등록을 할 수 있습니다.");
+    }
+    request.setUserId(loginUserId);
+
+    Long communityId = null;
+
+    try {
+      communityMapper.insertCommunity(request);
+      communityId = Optional.ofNullable(request.getId())
+              .orElseThrow(() -> new RuntimeException("커뮤니티 저장 실패"));
+
+      // 이미지가 있을 경우
+      if (images != null && !images.isEmpty()) {
+        List<String> urls = uploadImage(communityId, images);
+        String thumbnailUrl = urls.get(0);
+        String content = replaceBlobUrls(request.getContent(), request.getBlobUrlMap(), urls);
+        if (!communityMapper.updateCommunityContentAndThumbnailUrl(communityId, content, thumbnailUrl)) {
+          throw new RuntimeException("Content 업데이트 실패");
+        }
+      }
+    } catch (Exception e) {
+      // 게시글 등록이 실패한다면 DB 롤백을 위한 실제 삭제(hard delete) 처리
+      if (communityId != null) {
+          if (!communityMapper.rollbackCommunityInsert(communityId)) {
+            throw new RuntimeException("게시물 등록 롤백 처리 중 오류 발생", e);
+          }
+      }
+    }
+    return communityId;
+  }
+
 
   /**
    * 커뮤니티 상세 조회
@@ -114,17 +154,6 @@ public class CommunityService {
   }
 
   /**
-   * 커뮤니티 글 생성
-   *
-   * @param request 커뮤니티 등록 데이터
-   * @return 생성된 커뮤니티 id
-   */
-  public Long createCommunity(CommunityCreateRequest request) {
-    communityMapper.insertCommunity(request);
-    return request.getId();
-  }
-
-  /**
    * 커뮤니티 글 수정
    *
    * @param request 커뮤니티 id, 수정 데이터
@@ -162,8 +191,50 @@ public class CommunityService {
       reactionMapper.updateReaction(request);
       return existing.getId();
     }
-
   }
 
+  public List<String> uploadImage(Long communityId, List<MultipartFile> images) {
+    List<String> uploadedUrls = new ArrayList<>();
+    List<String> uploadedKeys = new ArrayList<>();
+
+    for (MultipartFile image : images) {
+      try {
+        byte[] data = imageConversionService.convertToWebP(image);
+        String key = "communities/" + communityId + "_" + System.currentTimeMillis() + ".webp";
+        String url = s3Service.uploadBytes(key, data, "image/webp");
+        uploadedUrls.add(url);
+        uploadedKeys.add(key);
+        if (communityImagesMapper.insertCommunityImage(communityId, url) != 1) {
+          throw new RuntimeException("이미지 URL 저장 실패: " + url);
+        }
+      } catch (Exception e) {
+        // 앞서 업로드된 이미지 롤백 처리
+        for (String uploadedKey : uploadedKeys) {
+          try {
+            s3Service.delete(uploadedKey);
+          } catch (Exception rollbackEx) {
+            throw new RuntimeException("업로드 된 s3 삭제 실패", e);
+          }
+        }
+        throw new RuntimeException("이미지 업로드 실패", e);
+      }
+    }
+    return uploadedUrls;
+  }
+
+  private String replaceBlobUrls(String content, Map<String, Integer> blobUrlMap, List<String> uploadedUrls) {
+    if (blobUrlMap == null || uploadedUrls == null) return content;
+
+    for (Map.Entry<String, Integer> entry : blobUrlMap.entrySet()) {
+      String blobUrl = entry.getKey();
+      int index = entry.getValue();
+
+      if (index >= 0 && index < uploadedUrls.size()) {
+        String s3Url = uploadedUrls.get(index);
+        content = content.replace(blobUrl, s3Url);
+      }
+    }
+    return content;
+  }
 
 }

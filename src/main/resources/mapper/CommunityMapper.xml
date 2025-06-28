@@ -3,6 +3,25 @@
 
 <mapper namespace="com.matdongsan.api.mapper.CommunityMapper">
 
+    <insert id="insertCommunity" useGeneratedKeys="true" keyProperty="id" parameterType="com.matdongsan.api.dto.community.CommunityCreateRequest">
+        INSERT INTO communities (user_id, category_id, title, content)
+        VALUES (#{userId}, #{categoryId}, #{title}, #{content})
+    </insert>
+
+    <update id="updateCommunityContentAndThumbnailUrl">
+        UPDATE communities
+           SET content = #{content}
+               ,thumbnail_url = #{thumbnailUrl}
+         WHERE id = #{communityId}
+           AND deleted_at IS NULL
+    </update>
+
+    <delete id="rollbackCommunityInsert">
+        DELETE
+          FROM communities
+         WHERE id = #{communityId}
+    </delete>
+
     <select id="selectCommunityDetail" parameterType="java.lang.Long" resultType="community">
         SELECT c.id
                ,c.user_id
@@ -29,10 +48,10 @@
                ,c.view_count
                ,c.created_at
           FROM communities c
-        INNER JOIN users u ON u.id = c.user_id
+    INNER JOIN users u ON u.id = c.user_id
          WHERE c.deleted_at IS NULL
         <if test="title != null and title != ''">
-           AND c.title LIKE CONCAT('%', #{title}, '%')
+            AND c.title LIKE CONCAT('%', #{title}, '%')
         </if>
         <if test="userName != null and userName != ''">
             AND u.name LIKE CONCAT('%', #{userName}, '%')
@@ -54,11 +73,6 @@
          LIMIT #{size}
         OFFSET #{offset}
     </select>
-
-    <insert id="insertCommunity" useGeneratedKeys="true" keyProperty="id" parameterType="com.matdongsan.api.dto.community.CommunityCreateRequest">
-        INSERT INTO communities (user_id, category_id, property_id, title, content, image_urls)
-        VALUES (#{userId}, #{categoryId}, #{propertyId}, #{title}, #{content}, string_to_array(#{imageUrls}, ','))
-    </insert>
 
     <update id="updateCommunity" parameterType="com.matdongsan.api.dto.community.CommunityUpdateRequest">
         UPDATE communities

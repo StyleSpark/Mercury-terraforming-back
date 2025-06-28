@@ -11,11 +11,15 @@ import java.util.List;
 
 @Mapper
 public interface CommunityMapper {
+  int insertCommunity(CommunityCreateRequest request);
+
+  boolean updateCommunityContentAndThumbnailUrl(Long communityId, String content, String thumbnailUrl);
+
+  boolean rollbackCommunityInsert(Long communityId);
+
   CommunityVO selectCommunityDetail(Long id);
 
   List<CommunityVO> selectCommunities(CommunityGetRequest request);
-
-  Long insertCommunity(CommunityCreateRequest request);
 
   void updateCommunity(CommunityUpdateRequest request);
 
