@@ -6,8 +6,8 @@ import org.jsoup.safety.Safelist;
 public class HtmlSanitizer {
 
   /**
-   * 사용자 HTML 콘텐츠를 XSS-safe하게 정제합니다.
-   * <p>, <img>, <strong>, <ul> 등은 허용되며, script, onerror, javascript: 등은 제거됩니다.
+   * 사용자 HTML 콘텐츠를 XSS-safe하게 정제함
+   * <p>, <img>, <strong>, <ul> 등은 허용되며, script, onerror, javascript: 등은 제거함
    */
   public static String sanitize(String rawHtml) {
     if (rawHtml == null) return null;
