@@ -17,15 +17,15 @@ public interface CommunityMapper {
 
   boolean rollbackCommunityInsert(Long communityId);
 
-  CommunityVO selectCommunityDetail(Long id);
-
   List<CommunityVO> selectCommunities(CommunityGetRequest request);
+
+  Integer countCommunities(CommunityGetRequest request);
+
+  CommunityVO selectCommunityDetail(Long id);
 
   void updateCommunity(CommunityUpdateRequest request);
 
   void softDeleteCommunity(CommunityDeleteRequest request);
-
-  Integer countCommunities(CommunityGetRequest request);
 
   void updateCommunityViewCount(Long communityId);
 }

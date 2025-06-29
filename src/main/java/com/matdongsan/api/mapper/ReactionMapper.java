@@ -10,6 +10,8 @@ import java.util.Map;
 
 @Mapper
 public interface ReactionMapper {
+  List<Map<String, Object>> selectReactionCountGroupByTarget(List<Long> targetIds, String targetType);
+
   ReactionVO selectReaction(ReactionRequest request);
 
   void updateReaction(ReactionRequest request);
@@ -19,6 +21,4 @@ public interface ReactionMapper {
   Long selectReactionLikeCount(Long communityId, String targetType);
 
   Long selectReactionDislikeCount(Long communityId, String targetType);
-
-  List<Map<String, Object>> selectReactionCountGroupByTarget(List<Long> targetIds, String targetType);
 }

@@ -19,9 +19,10 @@ public class CommunityVO {
   private LocalDate createdAt;
 
   private String userName;
-  private Integer likeCount;
-  private Integer dislikeCount;
-  private Integer commentCount;
+  private Long likeCount;
+  private Long dislikeCount;
+  private Long commentCount;
+  private String thumbnailUrl;
 
   private Boolean isMine;
 }

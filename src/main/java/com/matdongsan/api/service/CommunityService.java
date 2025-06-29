@@ -28,6 +28,8 @@ public class CommunityService {
   private final ImageConversionService imageConversionService;
   private final S3Service s3Service;
 
+  private final String targetType = "COMMUNITY";
+
   public Long createCommunity(
           CommunityCreateRequest request,
           List<MultipartFile> images,
@@ -65,6 +67,60 @@ public class CommunityService {
     return communityId;
   }
 
+  @Transactional(readOnly = true)
+  public Map<String, Object> getCommunityListWithPagination(CommunityGetRequest request, Long loginUserId) {
+    List<CommunityVO> communities = communityMapper.selectCommunities(request);
+
+    if (communities.isEmpty()) {
+      return Map.of(
+              "communities", List.of(),
+              "total", 0,
+              "page", request.getPage(),
+              "size", request.getSize()
+      );
+    }
+
+    List<Long> Communityids = new ArrayList<>();
+    for (CommunityVO vo : communities) {
+      Communityids.add(vo.getId());
+    }
+
+    List<Map<String, Object>> commentCounts = communityCommentMapper.selectCommentCountGroupByCommunity(Communityids);
+    Map<Long, Long> commentMap = new HashMap<>();
+    for (Map<String, Object> map : commentCounts) {
+      Long communityId = ((Number) map.get("community_id")).longValue();
+      Long count = ((Number) map.get("comment_count")).longValue();
+      commentMap.put(communityId, count);
+    }
+
+    List<Map<String, Object>> reactions = reactionMapper.selectReactionCountGroupByTarget(Communityids, targetType);
+    Map<Long, Long> likeMap = new HashMap<>();
+    Map<Long, Long> dislikeMap = new HashMap<>();
+    for (Map<String, Object> r : reactions) {
+      Long id = ((Number) r.get("target_id")).longValue();
+      Long likeCount = r.get("like_count") != null ? ((Number) r.get("like_count")).longValue() : 0;
+      Long dislikeCount = r.get("dislike_count") != null ? ((Number) r.get("dislike_count")).longValue() : 0;
+      likeMap.put(id, likeCount);
+      dislikeMap.put(id, dislikeCount);
+    }
+
+    for (CommunityVO vo : communities) {
+      Long communityId = vo.getId();
+      vo.setIsMine(vo.getUserId() != null && vo.getUserId().equals(loginUserId));
+      vo.setCommentCount(commentMap.containsKey(communityId) ? commentMap.get(communityId) : 0);
+      vo.setLikeCount(likeMap.containsKey(communityId) ? likeMap.get(communityId) : 0);
+      vo.setDislikeCount(dislikeMap.containsKey(communityId) ? dislikeMap.get(communityId) : 0);
+    }
+
+    Integer total = communityMapper.countCommunities(request);
+
+    return Map.of(
+            "communities", communities,
+            "total", total,
+            "page", request.getPage(),
+            "size", request.getSize()
+    );
+  }
 
   /**
    * 커뮤니티 상세 조회
@@ -95,62 +151,6 @@ public class CommunityService {
             .dislikeCount(dislikeCount)
             .isMine(isMine)
             .build();
-  }
-
-  /**
-   * 커뮤니티 목록 조회
-   *
-   * @param request 커뮤니티 검색 조건
-   * @return 커뮤니티 목록
-   */
-  @Transactional(readOnly = true)
-  public Map<String, Object> getCommunityListWithPagination(CommunityGetRequest request, Long loginUserId) {
-    List<CommunityVO> communities = communityMapper.selectCommunities(request);
-
-    // 게시글 ID 추출
-    List<Long> ids = new ArrayList<>();
-    for (CommunityVO vo : communities) {
-      ids.add(vo.getId());
-      vo.setIsMine(vo.getUserId() != null && vo.getUserId().equals(loginUserId));
-    }
-
-    // 댓글 수 조회 및 Map 변환
-    List<Map<String, Object>> commentCounts = communityCommentMapper.selectCommentCountGroupByCommunity(ids);
-    Map<Long, Integer> commentMap = new HashMap<>();
-    for (Map<String, Object> map : commentCounts) {
-      Long communityId = ((Number) map.get("community_id")).longValue();
-      Integer count = ((Number) map.get("comment_count")).intValue();
-      commentMap.put(communityId, count);
-    }
-
-    // 좋아요/싫어요 조회 및 Map 변환
-    List<Map<String, Object>> reactions = reactionMapper.selectReactionCountGroupByTarget(ids, "COMMUNITY");
-    Map<Long, Integer> likeMap = new HashMap<>();
-    Map<Long, Integer> dislikeMap = new HashMap<>();
-    for (Map<String, Object> r : reactions) {
-      Long id = ((Number) r.get("target_id")).longValue();
-      Integer likeCount = r.get("like_count") != null ? ((Number) r.get("like_count")).intValue() : 0;
-      Integer dislikeCount = r.get("dislike_count") != null ? ((Number) r.get("dislike_count")).intValue() : 0;
-      likeMap.put(id, likeCount);
-      dislikeMap.put(id, dislikeCount);
-    }
-
-    // CommunityVO에 카운트 정보 매핑
-    for (CommunityVO vo : communities) {
-      Long id = vo.getId();
-      vo.setCommentCount(commentMap.containsKey(id) ? commentMap.get(id) : 0);
-      vo.setLikeCount(likeMap.containsKey(id) ? likeMap.get(id) : 0);
-      vo.setDislikeCount(dislikeMap.containsKey(id) ? dislikeMap.get(id) : 0);
-    }
-
-    Integer total = communityMapper.countCommunities(request);
-
-    return Map.of(
-            "communities", communities,
-            "total", total,
-            "page", request.getPage(),
-            "size", request.getSize()
-    );
   }
 
   /**

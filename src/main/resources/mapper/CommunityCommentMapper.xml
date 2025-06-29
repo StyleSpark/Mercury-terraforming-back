@@ -3,6 +3,20 @@
 
 <mapper namespace="com.matdongsan.api.mapper.CommunityCommentMapper">
 
+    <select id="selectCommentCountGroupByCommunity" parameterType="list" resultType="map">
+        SELECT community_id
+               ,COUNT(*) AS comment_count
+          FROM community_comments
+         WHERE deleted_at IS NULL
+        <if test="list != null and list.size() > 0">
+            AND community_id IN
+            <foreach collection="list" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+      GROUP BY community_id
+    </select>
+
     <insert id="insertCommunityComment" useGeneratedKeys="true" keyProperty="id" parameterType="com.matdongsan.api.dto.community.comment.CommentCreateRequest">
         INSERT INTO community_comments (community_id, user_id, parent_id, content)
         VALUES (#{communityId}, #{userId}, #{parentId}, #{content})
@@ -82,18 +96,5 @@
            AND deleted_at IS NULL
     </update>
 
-    <select id="selectCommentCountGroupByCommunity" parameterType="list" resultType="map">
-        SELECT community_id,
-        COUNT(*) AS comment_count
-        FROM community_comments
-        WHERE deleted_at IS NULL
-        <if test="list != null and list.size() > 0">
-            AND community_id IN
-            <foreach collection="list" item="id" open="(" separator="," close=")">
-                #{id}
-            </foreach>
-        </if>
-        GROUP BY community_id
-    </select>
 
 </mapper>

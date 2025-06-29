@@ -22,34 +22,21 @@
          WHERE id = #{communityId}
     </delete>
 
-    <select id="selectCommunityDetail" parameterType="java.lang.Long" resultType="community">
-        SELECT c.id
-               ,c.user_id
-               ,u.name AS user_name
-               ,c.category_id
-               ,c.title
-               ,c.content
-               ,c.image_urls
-               ,c.view_count
-               ,c.created_at
-          FROM communities c
-        INNER JOIN users u ON u.id = c.user_id
-         WHERE c.id = #{id}
-    </select>
-
     <select id="selectCommunities" parameterType="com.matdongsan.api.dto.community.CommunityGetRequest" resultType="community">
         SELECT c.id
-               ,c.user_id
                ,u.name AS user_name
                ,c.category_id
                ,c.title
                ,c.content
-               ,c.image_urls
+               ,c.thumbnail_url
                ,c.view_count
                ,c.created_at
           FROM communities c
     INNER JOIN users u ON u.id = c.user_id
          WHERE c.deleted_at IS NULL
+        <if test="categoryId != null">
+            AND c.category_id = #{categoryId}
+        </if>
         <if test="title != null and title != ''">
             AND c.title LIKE CONCAT('%', #{title}, '%')
         </if>
@@ -74,6 +61,44 @@
         OFFSET #{offset}
     </select>
 
+    <select id="countCommunities" parameterType="com.matdongsan.api.dto.community.CommunityGetRequest" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+          FROM communities c
+    INNER JOIN users u ON u.id = c.user_id
+         WHERE c.deleted_at IS NULL
+        <if test="categoryId != null">
+           AND c.category_id = #{categoryId}
+        </if>
+        <if test="title != null and title != ''">
+           AND c.title LIKE CONCAT('%', #{title}, '%')
+        </if>
+        <if test="userName != null and userName != ''">
+           AND u.name LIKE CONCAT('%', #{userName}, '%')
+        </if>
+        <if test="titleOrContent != null and titleOrContent != ''">
+           AND (
+               c.title LIKE CONCAT('%', #{titleOrContent}, '%') OR
+               c.content LIKE CONCAT('%', #{titleOrContent}, '%')
+               )
+        </if>
+    </select>
+
+    <select id="selectCommunityDetail" parameterType="java.lang.Long" resultType="community">
+        SELECT c.id
+               ,c.user_id
+               ,u.name AS user_name
+               ,c.category_id
+               ,c.title
+               ,c.content
+               ,c.image_urls
+               ,c.view_count
+               ,c.created_at
+          FROM communities c
+        INNER JOIN users u ON u.id = c.user_id
+         WHERE c.id = #{id}
+    </select>
+
+
     <update id="updateCommunity" parameterType="com.matdongsan.api.dto.community.CommunityUpdateRequest">
         UPDATE communities
            SET user_id = #{userId}
@@ -94,15 +119,6 @@
            AND deleted_at IS NULL
     </update>
 
-    <select id="countCommunities" parameterType="community" resultType="java.lang.Integer">
-        SELECT COUNT(*)
-          FROM communities
-         WHERE 1=1
-        <if test="title != null and title != ''">
-          AND title LIKE CONCAT('%', #{title}, '%')
-        </if>
-          AND deleted_at IS NULL
-    </select>
 
     <update id="updateCommunityViewCount" parameterType="java.lang.Long">
         UPDATE communities

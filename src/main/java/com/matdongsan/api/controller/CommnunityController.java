@@ -44,6 +44,17 @@ public class CommnunityController {
             .body(ApiResponse.success(201, id));
   }
 
+  @Operation(summary = "커뮤니티 게시글 목록 조회", description = "커뮤니티 목록을 페이지네이션 형식으로 조회합니다.")
+  @GetMapping
+  public ResponseEntity<?> getCommunities(
+          @ModelAttribute CommunityGetRequest request,
+          @Parameter(hidden = true) @AuthenticationPrincipal UserRole user) {
+
+    Long loginUserId = (user != null) ? user.getId() : null;
+    Map<String, Object> response = service.getCommunityListWithPagination(request, loginUserId);
+    return ResponseEntity.ok(ApiResponse.success(response));
+  }
+
   /**
    * 커뮤니티 단일 조회
    * @param communityId 커뮤니티 id
@@ -56,20 +67,6 @@ public class CommnunityController {
     Long loginUserId = user != null ? user.getId() : null;
     CommunityGetResponse community = service.getCommunityDetail(communityId, loginUserId);
     return ResponseEntity.ok(ApiResponse.success(community));
-  }
-
-  /**
-   * 커뮤니티 전체 조회
-   * @param request 특정 커뮤니티 검색 매개변수
-   * @return 페이지와 커뮤니티 리스트
-   */
-  @GetMapping
-  public ResponseEntity<?> getCommunities(
-          @AuthenticationPrincipal UserRole user,
-          CommunityGetRequest request) {
-    Long loginUserId = user != null ? user.getId() : null;
-    Map<String, Object> response = service.getCommunityListWithPagination(request, loginUserId);
-    return ResponseEntity.ok(ApiResponse.success(response));
   }
 
   /**
