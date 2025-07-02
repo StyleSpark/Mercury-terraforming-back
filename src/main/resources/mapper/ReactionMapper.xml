@@ -17,6 +17,31 @@
       GROUP BY target_id
     </select>
 
+    <select id="isMyReation" resultType="java.lang.String">
+        SELECT reaction_type
+          FROM reactions
+         WHERE user_id = #{loginUserId}
+           AND target_id = #{targetId}
+           AND target_type = #{targetType}
+         LIMIT 1
+    </select>
+
+    <select id="selectReactionLikeCount" parameterType="map" resultType="java.lang.Long">
+        SELECT COUNT(*)
+          FROM reactions
+         WHERE target_id = #{communityId}
+           AND target_type = #{targetType}
+           AND reaction_type = 'LIKE'
+    </select>
+
+    <select id="selectReactionDislikeCount" parameterType="map" resultType="java.lang.Long">
+        SELECT COUNT(*)
+          FROM reactions
+         WHERE target_id = #{communityId}
+           AND target_type = #{targetType}
+           AND reaction_type = 'DISLIKE'
+    </select>
+
     <select id="selectReaction" parameterType="com.matdongsan.api.dto.reaction.ReactionRequest" resultType="reaction">
         SELECT id
                ,user_id
@@ -42,22 +67,5 @@
         INSERT INTO reactions (user_id, target_id, target_type, reaction_type)
         VALUES (#{userId}, #{targetId}, #{targetType}, #{reactionType})
     </insert>
-
-    <select id="selectReactionLikeCount" parameterType="map" resultType="java.lang.Long">
-        SELECT COUNT(*)
-          FROM reactions
-         WHERE target_id = #{communityId}
-           AND target_type = #{targetType}
-           AND reaction_type = 'LIKE'
-    </select>
-
-    <select id="selectReactionDislikeCount" parameterType="map" resultType="java.lang.Long">
-        SELECT COUNT(*)
-          FROM reactions
-         WHERE target_id = #{communityId}
-           AND target_type = #{targetType}
-           AND reaction_type = 'DISLIKE'
-    </select>
-
 
 </mapper>

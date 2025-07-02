@@ -25,4 +25,5 @@ public class CommunityVO {
   private String thumbnailUrl;
 
   private Boolean isMine;
+  private String myReaction;
 }

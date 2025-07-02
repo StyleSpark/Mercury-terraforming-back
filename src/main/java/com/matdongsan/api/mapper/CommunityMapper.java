@@ -23,9 +23,9 @@ public interface CommunityMapper {
 
   CommunityVO selectCommunityDetail(Long id);
 
+  int updateCommunityViewCount(Long communityId);
+
   void updateCommunity(CommunityUpdateRequest request);
 
   void softDeleteCommunity(CommunityDeleteRequest request);
-
-  void updateCommunityViewCount(Long communityId);
 }

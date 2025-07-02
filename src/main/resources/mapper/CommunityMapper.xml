@@ -24,6 +24,7 @@
 
     <select id="selectCommunities" parameterType="com.matdongsan.api.dto.community.CommunityGetRequest" resultType="community">
         SELECT c.id
+               ,c.user_id
                ,u.name AS user_name
                ,c.category_id
                ,c.title
@@ -90,14 +91,20 @@
                ,c.category_id
                ,c.title
                ,c.content
-               ,c.image_urls
                ,c.view_count
                ,c.created_at
           FROM communities c
         INNER JOIN users u ON u.id = c.user_id
          WHERE c.id = #{id}
+           AND c.deleted_at IS NULL
     </select>
 
+    <update id="updateCommunityViewCount" parameterType="java.lang.Long">
+        UPDATE communities
+           SET view_count = view_count + 1
+         WHERE id = #{communityId}
+           AND deleted_at IS NULL
+    </update>
 
     <update id="updateCommunity" parameterType="com.matdongsan.api.dto.community.CommunityUpdateRequest">
         UPDATE communities
@@ -116,14 +123,6 @@
            SET deleted_at = NOW()
          WHERE id = #{id}
            AND user_id = #{userId}
-           AND deleted_at IS NULL
-    </update>
-
-
-    <update id="updateCommunityViewCount" parameterType="java.lang.Long">
-        UPDATE communities
-           SET view_count = view_count + 1
-         WHERE id = #{communityId}
            AND deleted_at IS NULL
     </update>
 

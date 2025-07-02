@@ -122,35 +122,34 @@ public class CommunityService {
     );
   }
 
-  /**
-   * 커뮤니티 상세 조회
-   *
-   * @param communityId 커뮤니티 communityId
-   * @return 커뮤니티 상세 데이터
-   */
-  public CommunityGetResponse getCommunityDetail(Long communityId, Long loginUserId) {
-    communityMapper.updateCommunityViewCount(communityId);
+  public CommunityVO getCommunityDetail(Long communityId, Long loginUserId) {
+    CommunityVO community = communityMapper.selectCommunityDetail(communityId);
 
-    CommunityVO data = communityMapper.selectCommunityDetail(communityId);
-    boolean isMine = loginUserId != null && loginUserId.equals(data.getUserId());
+    if (community == null) {
+      throw new IllegalArgumentException("게시글이 존재하지 않습니다.");
+    }
 
-    String targetType = "COMMUNITY";
+    if (communityMapper.updateCommunityViewCount(communityId) != 1) {
+      throw new IllegalArgumentException("조회 수 업데이트에 실패하였습니다.");
+    }
+
+    boolean isMine = loginUserId != null && loginUserId.equals(community.getUserId());
+    String myReaction = "DEFAULT";
+    if (loginUserId != null) {
+      String result = reactionMapper.isMyReation(loginUserId, communityId, targetType);
+      if (result != null) {
+        myReaction = result;
+      }
+    }
     Long likeCount = reactionMapper.selectReactionLikeCount(communityId, targetType);
     Long dislikeCount = reactionMapper.selectReactionDislikeCount(communityId, targetType);
 
-    return CommunityGetResponse.builder()
-            .communityId(data.getId())
-            .userId(data.getUserId())
-            .userName(data.getUserName())
-            .title(data.getTitle())
-            .content(data.getContent())
-            .imageUrls(data.getImageUrls())
-            .viewCount(data.getViewCount())
-            .createdAt(data.getCreatedAt())
-            .likeCount(likeCount)
-            .dislikeCount(dislikeCount)
-            .isMine(isMine)
-            .build();
+    community.setIsMine(isMine);
+    community.setMyReaction(myReaction);
+    community.setLikeCount(likeCount);
+    community.setDislikeCount(dislikeCount);
+
+    return community;
   }
 
   /**

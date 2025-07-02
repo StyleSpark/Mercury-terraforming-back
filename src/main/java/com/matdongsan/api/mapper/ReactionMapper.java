@@ -12,13 +12,15 @@ import java.util.Map;
 public interface ReactionMapper {
   List<Map<String, Object>> selectReactionCountGroupByTarget(List<Long> targetIds, String targetType);
 
+  String isMyReation(Long loginUserId, Long targetId ,String targetType);
+
+  Long selectReactionLikeCount(Long communityId, String targetType);
+
+  Long selectReactionDislikeCount(Long communityId, String targetType);
+
   ReactionVO selectReaction(ReactionRequest request);
 
   void updateReaction(ReactionRequest request);
 
   Long insertReaction(ReactionRequest request);
-
-  Long selectReactionLikeCount(Long communityId, String targetType);
-
-  Long selectReactionDislikeCount(Long communityId, String targetType);
 }

@@ -5,6 +5,7 @@ import com.matdongsan.api.dto.community.*;
 import com.matdongsan.api.dto.reaction.ReactionRequest;
 import com.matdongsan.api.security.UserRole;
 import com.matdongsan.api.service.CommunityService;
+import com.matdongsan.api.vo.CommunityVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -55,17 +56,14 @@ public class CommnunityController {
     return ResponseEntity.ok(ApiResponse.success(response));
   }
 
-  /**
-   * 커뮤니티 단일 조회
-   * @param communityId 커뮤니티 id
-   * @return 커뮤니티 상세 정보
-   */
+  @Operation(summary = "커뮤니티 게시글 상세 조회", description = "커뮤니티 ID로 상세 정보를 조회합니다.")
   @GetMapping("/{communityId}")
   public ResponseEntity<?> getCommunityDetail(
-          @AuthenticationPrincipal UserRole user,
-          @PathVariable Long communityId) {
-    Long loginUserId = user != null ? user.getId() : null;
-    CommunityGetResponse community = service.getCommunityDetail(communityId, loginUserId);
+          @Parameter(description = "커뮤니티 ID", example = "1") @PathVariable Long communityId,
+          @Parameter(hidden = true) @AuthenticationPrincipal UserRole user) {
+
+    Long loginUserId = (user != null) ? user.getId() : null;
+    CommunityVO community = service.getCommunityDetail(communityId, loginUserId);
     return ResponseEntity.ok(ApiResponse.success(community));
   }
 
