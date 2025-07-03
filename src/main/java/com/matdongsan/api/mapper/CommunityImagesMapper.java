@@ -2,9 +2,13 @@ package com.matdongsan.api.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
 
+import java.util.List;
+
 @Mapper
 public interface CommunityImagesMapper {
+  Long insertCommunityImage(Long communityId, String imageUrl);
 
-  Long insertCommunityImage(Long communityId, String imageUrl); // @Param 빼고 실험해보기
+  List<String> selectImageUrlsByCommunityId(Long communityId);
 
+  int softDeleteByUrl(Long communityId, String imageUrl);
 }

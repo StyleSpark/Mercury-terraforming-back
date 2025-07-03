@@ -9,6 +9,10 @@ import com.matdongsan.api.mapper.ReactionMapper;
 import com.matdongsan.api.vo.CommunityVO;
 import com.matdongsan.api.vo.ReactionVO;
 import lombok.RequiredArgsConstructor;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -152,13 +156,58 @@ public class CommunityService {
     return community;
   }
 
-  /**
-   * 커뮤니티 글 수정
-   *
-   * @param request 커뮤니티 id, 수정 데이터
-   */
-  public void updateCommunity(CommunityUpdateRequest request) {
-    communityMapper.updateCommunity(request);
+  public void updateCommunity(
+          CommunityUpdateRequest request,
+          List<MultipartFile> images,
+          Long loginUserId) {
+    if (loginUserId == null) {
+      throw new RuntimeException("로그인을 하셔야 게시물 등록을 할 수 있습니다.");
+    }
+    request.setUserId(loginUserId);
+    validateCommunityOwnerShip(request);
+    Long communityId = request.getId();
+
+    CommunityVO community = communityMapper.selectCommunityDetail(communityId);
+    if (community == null) {
+      throw new IllegalArgumentException("게시글이 존재하지 않습니다.");
+    }
+
+    List<String> registeredImageUrls = communityImagesMapper.selectImageUrlsByCommunityId(communityId);
+    List<String> newImageUrls = extractImageUrls(request.getContent());
+
+    List<String> deletedImageUrls = new ArrayList<>();
+    for (String registeredImageUrl : registeredImageUrls) {
+      if (!newImageUrls.contains(registeredImageUrl)) {
+        deletedImageUrls.add(registeredImageUrl);
+      }
+    }
+
+    List<String> uploadedUrls = new ArrayList<>();
+    String updatedContent = request.getContent();
+    if (images != null && !images.isEmpty()) {
+      uploadedUrls = uploadImage(communityId, images);
+      updatedContent = replaceBlobUrls(request.getContent(), request.getBlobUrlMap(), uploadedUrls);
+    }
+
+    String thumbnailUrl = extractFirstImageUrl(updatedContent);
+
+    request.setContent(updatedContent);
+    request.setThumbnailUrl(thumbnailUrl);
+
+    if (communityMapper.updateCommunity(request) != 1) {
+      throw new RuntimeException("게시글 수정이 실패했습니다.");
+    }
+
+    for (String imageUrl : deletedImageUrls) {
+      try {
+        s3Service.deleteByUrl(imageUrl);
+        if (communityImagesMapper.softDeleteByUrl(communityId, imageUrl) != 1) {
+          throw new RuntimeException("이미지 테이블 soft-delete 삭제 실패");
+        }
+      } catch (Exception e) {
+        throw new RuntimeException("이미지 삭제 실패: {}", e);
+      }
+    }
   }
 
   /**
@@ -235,5 +284,45 @@ public class CommunityService {
     }
     return content;
   }
+
+  private void validateCommunityOwnerShip(CommunityUpdateRequest request) {
+    if (!communityMapper.checkCommunityByUserId(request)) {
+      throw new SecurityException("본인의 게시글만 수정 가능합니다.");
+    }
+  }
+
+  private List<String> extractImageUrls(String html) {
+    List<String> urls = new ArrayList<>();
+    if (html == null || html.isEmpty()) return urls;
+
+    Document doc = Jsoup.parse(html);
+    Elements images = doc.select("img");
+
+    for (Element img : images) {
+      String src = img.attr("src");
+      if (src != null && !src.isEmpty()) {
+        urls.add(src);
+      }
+    }
+
+    return urls;
+  }
+
+  private String extractFirstImageUrl(String html) {
+    if (html == null || html.isEmpty()) return null;
+
+    Document doc = Jsoup.parse(html);
+    Element img = doc.selectFirst("img");
+
+    if (img != null) {
+      String src = img.attr("src");
+      if (src != null && !src.isEmpty()) {
+        return src;
+      }
+    }
+
+    return null;
+  }
+
 
 }

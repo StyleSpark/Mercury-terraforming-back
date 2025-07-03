@@ -67,19 +67,20 @@ public class CommnunityController {
     return ResponseEntity.ok(ApiResponse.success(community));
   }
 
-  /**
-   * 커뮤니티 수정
-   * @param communityId 커뮤니티 id
-   * @param request 커뮤니티 데이터
-   * @return 수정 결과
-   */
+  @Operation(summary = "커뮤니티 게시글 수정",
+          description = "커뮤니티 게시글을 수정합니다. JWT 인증 필요",
+          security = @SecurityRequirement(name = "JWT"))
   @PatchMapping("/{communityId}")
   public ResponseEntity<?> updateCommunity(
-          @PathVariable Long communityId,
-          @RequestBody CommunityUpdateRequest request) {
+          @Parameter(description = "커뮤니티 ID", example = "1") @PathVariable Long communityId,
+          @RequestPart("request") CommunityUpdateRequest request,
+          @RequestPart(value = "images", required = false) List<MultipartFile> images,
+          @Parameter(hidden = true) @AuthenticationPrincipal UserRole user) {
+
+    Long loginUserId = user.getId();
     request.setId(communityId);
-    service.updateCommunity(request);
-    return ResponseEntity.ok(ApiResponse.success("커뮤니티 글이 수정되었습니다."));
+    service.updateCommunity(request, images, loginUserId);
+    return ResponseEntity.ok(ApiResponse.success("게시글 수정이 성공적으로 완료되었습니다."));
   }
 
   /**

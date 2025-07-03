@@ -106,16 +106,26 @@
            AND deleted_at IS NULL
     </update>
 
+    <select id="checkCommunityByUserId" parameterType="com.matdongsan.api.dto.community.CommunityUpdateRequest" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1
+              FROM communities
+             WHERE id = #{id}
+               AND user_id = #{userId}
+            )
+    </select>
+
     <update id="updateCommunity" parameterType="com.matdongsan.api.dto.community.CommunityUpdateRequest">
         UPDATE communities
            SET user_id = #{userId}
                ,category_id = #{categoryId}
-               ,property_id = #{propertyId}
                ,title = #{title}
                ,content = #{content}
-               ,image_urls = string_to_array(#{imageUrls}, ',')
+               ,thumbnail_url = #{thumbnailUrl}
                ,updated_at = NOW()
          WHERE id = #{id}
+           AND user_id = #{userId}
+           AND deleted_at IS NULL
     </update>
 
     <update id="softDeleteCommunity" parameterType="com.matdongsan.api.dto.community.CommunityUpdateRequest">

@@ -8,4 +8,19 @@
         VALUES (#{communityId}, #{imageUrl})
     </insert>
 
+    <select id="selectImageUrlsByCommunityId">
+        SELECT image_url
+          FROM community_images
+         WHERE community_id = #{communityId}
+           AND deleted_at IS NULL
+    </select>
+
+    <update id="softDeleteByUrl">
+        UPDATE community_images
+           SET deleted_at = NOW()
+         WHERE community_id = #{communityId}
+           AND image_url = #{imageUrl}
+           AND deleted_at IS NULL
+    </update>
+
 </mapper>
