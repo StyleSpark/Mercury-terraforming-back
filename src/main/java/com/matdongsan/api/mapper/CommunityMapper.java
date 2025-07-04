@@ -25,7 +25,7 @@ public interface CommunityMapper {
 
   int updateCommunityViewCount(Long communityId);
 
-  boolean checkCommunityByUserId(CommunityUpdateRequest request);
+  boolean checkCommunityByUserId(Long communityId, Long loginUserId);
 
   int updateCommunity(CommunityUpdateRequest request);
 

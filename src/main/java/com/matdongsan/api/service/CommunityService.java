@@ -164,8 +164,9 @@ public class CommunityService {
       throw new RuntimeException("로그인을 하셔야 게시물 등록을 할 수 있습니다.");
     }
     request.setUserId(loginUserId);
-    validateCommunityOwnerShip(request);
+
     Long communityId = request.getId();
+    validateCommunityOwnerShip(communityId, loginUserId);
 
     CommunityVO community = communityMapper.selectCommunityDetail(communityId);
     if (community == null) {
@@ -285,8 +286,8 @@ public class CommunityService {
     return content;
   }
 
-  private void validateCommunityOwnerShip(CommunityUpdateRequest request) {
-    if (!communityMapper.checkCommunityByUserId(request)) {
+  private void validateCommunityOwnerShip(Long communityId, Long loginUserId) {
+    if (!communityMapper.checkCommunityByUserId(communityId, loginUserId)) {
       throw new SecurityException("본인의 게시글만 수정 가능합니다.");
     }
   }

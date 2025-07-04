@@ -106,12 +106,12 @@
            AND deleted_at IS NULL
     </update>
 
-    <select id="checkCommunityByUserId" parameterType="com.matdongsan.api.dto.community.CommunityUpdateRequest" resultType="boolean">
+    <select id="checkCommunityByUserId" resultType="boolean">
         SELECT EXISTS (
             SELECT 1
               FROM communities
-             WHERE id = #{id}
-               AND user_id = #{userId}
+             WHERE id = #{communityId}
+               AND user_id = #{loginUserId}
             )
     </select>
 
