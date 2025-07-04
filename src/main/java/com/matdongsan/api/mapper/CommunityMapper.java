@@ -29,5 +29,5 @@ public interface CommunityMapper {
 
   int updateCommunity(CommunityUpdateRequest request);
 
-  void softDeleteCommunity(CommunityDeleteRequest request);
+  int softDeleteCommunity(CommunityDeleteRequest request);
 }

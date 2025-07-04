@@ -161,7 +161,7 @@ public class CommunityService {
           List<MultipartFile> images,
           Long loginUserId) {
     if (loginUserId == null) {
-      throw new RuntimeException("로그인을 하셔야 게시물 등록을 할 수 있습니다.");
+      throw new RuntimeException("로그인을 하셔야 게시물 수정을 할 수 있습니다.");
     }
     request.setUserId(loginUserId);
 
@@ -211,13 +211,35 @@ public class CommunityService {
     }
   }
 
-  /**
-   * 커뮤니티 글 삭제
-   *
-   * @param request 커뮤니티 id, 사용자 정보 데이터
-   */
   public void deleteCommunity(CommunityDeleteRequest request) {
-    communityMapper.softDeleteCommunity(request);
+    if (request.getUserId() == null) {
+      throw new RuntimeException("로그인을 하셔야 게시물 삭제를 할 수 있습니다.");
+    }
+
+    Long communityId = request.getId();
+    Long loginUserId = request.getUserId();
+    validateCommunityOwnerShip(communityId, loginUserId);
+
+    List<String> deletedImageUrls = communityImagesMapper.selectImageUrlsByCommunityId(communityId);
+
+    for (String imageUrl : deletedImageUrls) {
+      try {
+        s3Service.deleteByUrl(imageUrl);
+        if (communityImagesMapper.softDeleteByUrl(communityId, imageUrl) != 1) {
+          throw new RuntimeException("이미지 테이블 soft-delete 삭제 실패");
+        }
+      } catch (Exception e) {
+        throw new RuntimeException("이미지 삭제 실패: {}", e);
+      }
+    }
+
+    // 댓글/대댓글 삭제 처리
+
+    // 리액션(좋아요/싫어요) 삭제 처리
+
+    if (communityMapper.softDeleteCommunity(request) != 1) {
+      throw new RuntimeException("게시글 삭제가 실패했습니다.");
+    }
   }
 
   /**
@@ -288,7 +310,7 @@ public class CommunityService {
 
   private void validateCommunityOwnerShip(Long communityId, Long loginUserId) {
     if (!communityMapper.checkCommunityByUserId(communityId, loginUserId)) {
-      throw new SecurityException("본인의 게시글만 수정 가능합니다.");
+      throw new SecurityException("게시글 작성자만 이용할 수 있습니다.");
     }
   }
 

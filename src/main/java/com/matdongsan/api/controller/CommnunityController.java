@@ -83,19 +83,19 @@ public class CommnunityController {
     return ResponseEntity.ok(ApiResponse.success("게시글 수정이 성공적으로 완료되었습니다."));
   }
 
-  /**
-   * 커뮤니티 삭제
-   * @param communityId 커뮤니티 id
-   * @param request 사용자 정보 데이터
-   * @return 삭제 결과
-   */
+  @Operation(summary = "커뮤니티 게시글 삭제 (소프트)",
+          description = "커뮤니티 게시글을 비활성화 처리하여 삭제합니다. JWT 인증 필요",
+          security = @SecurityRequirement(name = "JWT"))
   @DeleteMapping("/{communityId}")
   public ResponseEntity<?> deleteCommunity(
-          @PathVariable Long communityId,
-          @RequestBody CommunityDeleteRequest request) {
+          @Parameter(description = "커뮤니티 ID", example = "1") @PathVariable Long communityId,
+          @Parameter(hidden = true) @AuthenticationPrincipal UserRole user) {
+
+    CommunityDeleteRequest request = new CommunityDeleteRequest();
     request.setId(communityId);
+    request.setUserId(user.getId());
     service.deleteCommunity(request);
-    return ResponseEntity.ok(ApiResponse.success("커뮤니티 글이 삭제되었습니다."));
+    return ResponseEntity.ok(ApiResponse.success("게시글이 삭제되었습니다."));
   }
 
   /**
