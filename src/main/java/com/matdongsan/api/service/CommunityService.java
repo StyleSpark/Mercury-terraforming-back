@@ -23,7 +23,6 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 @Transactional(rollbackFor = Exception.class)
-@Slf4j
 public class CommunityService {
 
   private final CommunityMapper communityMapper;
@@ -128,15 +127,12 @@ public class CommunityService {
     );
   }
 
+  @Transactional(readOnly = true)
   public CommunityVO getCommunityDetail(Long communityId, Long loginUserId) {
     CommunityVO community = communityMapper.selectCommunityDetail(communityId);
 
     if (community == null) {
       throw new IllegalArgumentException("게시글이 존재하지 않습니다.");
-    }
-
-    if (communityMapper.updateCommunityViewCount(communityId) != 1) {
-      throw new IllegalArgumentException("조회 수 업데이트에 실패하였습니다.");
     }
 
     boolean isMine = loginUserId != null && loginUserId.equals(community.getUserId());
@@ -156,6 +152,12 @@ public class CommunityService {
     community.setDislikeCount(dislikeCount);
 
     return community;
+  }
+
+  public void increaseViewCount(Long communityId) {
+    if (communityMapper.updateCommunityViewCount(communityId) != 1) {
+      throw new IllegalArgumentException("조회 수 업데이트에 실패하였습니다.");
+    }
   }
 
   public void updateCommunity(

@@ -67,6 +67,14 @@ public class CommnunityController {
     return ResponseEntity.ok(ApiResponse.success(community));
   }
 
+  @Operation(summary = "커뮤니티 게시글 조회 수 증가", description = "커뮤니티 게시글 상세 조회시 조회수를 증가시킵니다.")
+  @PatchMapping("/{community}/views")
+  public ResponseEntity<?> increaseViewCount(
+          @Parameter(description = "커뮤니티 ID", example = "1") @PathVariable Long communityId) {
+    service.increaseViewCount(communityId);
+    return ResponseEntity.ok(ApiResponse.success("게시글 조회 수를 성공적으로 증가시켰습니다."));
+  }
+
   @Operation(summary = "커뮤니티 게시글 수정",
           description = "커뮤니티 게시글을 수정합니다. JWT 인증 필요",
           security = @SecurityRequirement(name = "JWT"))
