@@ -42,7 +42,7 @@
            AND reaction_type = 'DISLIKE'
     </select>
 
-    <select id="selectReaction" parameterType="com.matdongsan.api.dto.reaction.ReactionRequest" resultType="reaction">
+    <select id="selectReaction" parameterType="com.matdongsan.api.dto.reaction.ReactionCreateRequest" resultType="reaction">
         SELECT id
                ,user_id
                ,target_id
@@ -55,7 +55,7 @@
            AND target_type = #{targetType}
     </select>
 
-    <update id="updateReaction" parameterType="com.matdongsan.api.dto.reaction.ReactionRequest">
+    <update id="updateReaction" parameterType="com.matdongsan.api.dto.reaction.ReactionCreateRequest">
         UPDATE reactions
            SET reaction_type = #{reactionType}
          WHERE user_id = #{userId}
@@ -63,7 +63,7 @@
            AND target_type = #{targetType}
     </update>
 
-    <insert id="insertReaction" useGeneratedKeys="true" keyProperty="id" parameterType="com.matdongsan.api.dto.reaction.ReactionRequest">
+    <insert id="insertReaction" useGeneratedKeys="true" keyProperty="id" parameterType="com.matdongsan.api.dto.reaction.ReactionCreateRequest">
         INSERT INTO reactions (user_id, target_id, target_type, reaction_type)
         VALUES (#{userId}, #{targetId}, #{targetType}, #{reactionType})
     </insert>

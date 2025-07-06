@@ -2,7 +2,7 @@ package com.matdongsan.api.controller;
 
 import com.matdongsan.api.dto.ApiResponse;
 import com.matdongsan.api.dto.community.*;
-import com.matdongsan.api.dto.reaction.ReactionRequest;
+import com.matdongsan.api.dto.reaction.ReactionCreateRequest;
 import com.matdongsan.api.security.UserRole;
 import com.matdongsan.api.service.CommunityService;
 import com.matdongsan.api.vo.CommunityVO;
@@ -98,18 +98,17 @@ public class CommnunityController {
     return ResponseEntity.ok(ApiResponse.success("게시글이 삭제되었습니다."));
   }
 
-  /**
-   * 커뮤니티 게시글 반응(좋아요/싫어요) 등록
-   * @param communityId 커뮤니티 id
-   * @param request 유저 id, reactionType
-   * @return reations id
-   */
+  @Operation(summary = "커뮤니티 게시글 반응 등록 (좋아요/싫어요)",
+          description = "게시글에 대한 반응을 등록 합니다. JWT 인증 필요",
+          security = @SecurityRequirement(name = "JWT"))
   @PostMapping("/{communityId}/reactions")
   public ResponseEntity<?> createCommunityReaction(
           @PathVariable Long communityId,
-          @RequestBody ReactionRequest request) {
+          @RequestBody ReactionCreateRequest request,
+          @Parameter(hidden = true) @AuthenticationPrincipal UserRole user) {
+
+    request.setUserId(user.getId());
     request.setTargetId(communityId);
-    request.setTargetType("COMMUNITY");
     Long reactionId = service.createCommunityReaction(request);
     return ResponseEntity
             .status(HttpStatus.CREATED)

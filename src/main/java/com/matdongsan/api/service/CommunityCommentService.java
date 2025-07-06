@@ -1,7 +1,7 @@
 package com.matdongsan.api.service;
 
 import com.matdongsan.api.dto.community.comment.*;
-import com.matdongsan.api.dto.reaction.ReactionRequest;
+import com.matdongsan.api.dto.reaction.ReactionCreateRequest;
 import com.matdongsan.api.mapper.CommunityCommentMapper;
 import com.matdongsan.api.mapper.ReactionMapper;
 import com.matdongsan.api.vo.CommunityCommentVO;
@@ -165,7 +165,7 @@ public class CommunityCommentService {
    * @param request 커뮤니티 댓글 id, 유저 id, reactionType
    * @return reations id
    */
-  public Long createCommentReaction(ReactionRequest request) {
+  public Long createCommentReaction(ReactionCreateRequest request) {
     String reactionType = request.getReactionType().toUpperCase();
 
     ReactionVO existing = reactionMapper.selectReaction(request);

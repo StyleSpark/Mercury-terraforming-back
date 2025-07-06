@@ -1,9 +1,8 @@
 package com.matdongsan.api.mapper;
 
-import com.matdongsan.api.dto.reaction.ReactionRequest;
+import com.matdongsan.api.dto.reaction.ReactionCreateRequest;
 import com.matdongsan.api.vo.ReactionVO;
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 import java.util.Map;
@@ -18,9 +17,9 @@ public interface ReactionMapper {
 
   Long selectReactionDislikeCount(Long communityId, String targetType);
 
-  ReactionVO selectReaction(ReactionRequest request);
+  ReactionVO selectReaction(ReactionCreateRequest request);
 
-  void updateReaction(ReactionRequest request);
+  int updateReaction(ReactionCreateRequest request);
 
-  Long insertReaction(ReactionRequest request);
+  Long insertReaction(ReactionCreateRequest request);
 }

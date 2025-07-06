@@ -1,7 +1,7 @@
 package com.matdongsan.api.service;
 
 import com.matdongsan.api.dto.community.*;
-import com.matdongsan.api.dto.reaction.ReactionRequest;
+import com.matdongsan.api.dto.reaction.ReactionCreateRequest;
 import com.matdongsan.api.mapper.CommunityCommentMapper;
 import com.matdongsan.api.mapper.CommunityImagesMapper;
 import com.matdongsan.api.mapper.CommunityMapper;
@@ -9,6 +9,7 @@ import com.matdongsan.api.mapper.ReactionMapper;
 import com.matdongsan.api.vo.CommunityVO;
 import com.matdongsan.api.vo.ReactionVO;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -22,6 +23,7 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 @Transactional(rollbackFor = Exception.class)
+@Slf4j
 public class CommunityService {
 
   private final CommunityMapper communityMapper;
@@ -242,24 +244,30 @@ public class CommunityService {
     }
   }
 
-  /**
-   * 커뮤니티 게시글 반응(좋아요/싫어요) 등록
-   * @param request 유저 id, target_id(커뮤니티 id), target_type(커뮤니티), reactionType
-   * @return reations id
-   */
-  public Long createCommunityReaction(ReactionRequest request) {
+  public Long createCommunityReaction(ReactionCreateRequest request) {
+    request.setTargetType(targetType);
     String reactionType = request.getReactionType().toUpperCase();
 
-    ReactionVO existing = reactionMapper.selectReaction(request);
+    ReactionVO existing = reactionMapper.selectReaction(request); // ReactionVO 점검
 
-    if (existing == null) return reactionMapper.insertReaction(request);
+    if (existing == null) {
+      if (reactionMapper.insertReaction(request) != 1) {
+        throw new RuntimeException("반응 등록에 실패하였습니다.");
+      } else {
+        return request.getId();
+      }
+    }
 
     if (reactionType.equals(existing.getReactionType())) {
       request.setReactionType("DEFAULT");
-      reactionMapper.updateReaction(request);
+      if (reactionMapper.updateReaction(request) != 1) { // 요청 DTO에 'id'를 만들면 쿼리의 WHERE절 수정 가능
+        throw new RuntimeException("반응 업데이트에 실패하였습니다.");
+      }
       return existing.getId();
     } else {
-      reactionMapper.updateReaction(request);
+      if (reactionMapper.updateReaction(request) != 1) {
+        throw new RuntimeException("반응 업데이트에 실패하였습니다.");
+      }
       return existing.getId();
     }
   }
@@ -279,12 +287,11 @@ public class CommunityService {
           throw new RuntimeException("이미지 URL 저장 실패: " + url);
         }
       } catch (Exception e) {
-        // 앞서 업로드된 이미지 롤백 처리
         for (String uploadedKey : uploadedKeys) {
           try {
-            s3Service.delete(uploadedKey);
+            s3Service.delete(uploadedKey); // deleteByUrl을 사용하여 uploadedKeys 리스트는 필요 없지 않나
           } catch (Exception rollbackEx) {
-            throw new RuntimeException("업로드 된 s3 삭제 실패", e);
+            throw new RuntimeException("업로드 된 S3 삭제 실패", e);
           }
         }
         throw new RuntimeException("이미지 업로드 실패", e);

@@ -5,7 +5,7 @@ import com.matdongsan.api.dto.community.comment.CommentCreateRequest;
 import com.matdongsan.api.dto.community.comment.CommentDeleteRequest;
 import com.matdongsan.api.dto.community.comment.CommentGetRequest;
 import com.matdongsan.api.dto.community.comment.CommentUpdateRequest;
-import com.matdongsan.api.dto.reaction.ReactionRequest;
+import com.matdongsan.api.dto.reaction.ReactionCreateRequest;
 import com.matdongsan.api.service.CommunityCommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -107,7 +107,7 @@ public class CommunityCommentController {
   @PostMapping("/comments/{commentId}/reactions")
   public ResponseEntity<?> createCommentReaction(
           @PathVariable Long commentId,
-          @RequestBody ReactionRequest request) {
+          @RequestBody ReactionCreateRequest request) {
     request.setTargetId(commentId);
     request.setTargetType("COMMENT");
     Long reactionId = service.createCommentReaction(request);
