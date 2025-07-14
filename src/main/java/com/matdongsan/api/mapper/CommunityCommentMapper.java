@@ -24,7 +24,7 @@ public interface CommunityCommentMapper {
 
   Integer countCommentReplies(CommentGetRequest request);
 
-  void updateComment(CommentUpdateRequest request);
+  int updateComment(CommentUpdateRequest request);
 
-  void softDeleteComment(CommentDeleteRequest request);
+  int softDeleteComment(CommentDeleteRequest request);
 }

@@ -88,6 +88,7 @@
         SELECT c.id
                ,c.user_id
                ,u.name AS user_name
+               ,u.profile
                ,c.category_id
                ,c.title
                ,c.content

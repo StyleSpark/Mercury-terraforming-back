@@ -23,63 +23,35 @@ public class CommunityCommentService {
   private final CommunityCommentMapper communityCommentMapper;
   private final ReactionMapper reactionMapper;
 
-  /**
-   * 커뮤니티 댓글/대댓글 등록
-   *
-   * @param request id, 커뮤니티 id, 유저 id, 부모 댓글 id, 내용
-   * @return id
-   */
+  private final String targetType = "COMMENT";
+
   public Long createComment(CommentCreateRequest request) {
+    if (request.getUserId() == null) {
+      throw new RuntimeException("로그인을 하셔야 댓글을 등록할 수 있습니다.");
+    }
     communityCommentMapper.insertCommunityComment(request);
     return request.getId();
   }
 
-  /**
-   * 특정 커뮤니티 댓글 목록 조회
-   *
-   * @param request 커뮤니티 id, 유저 id, 부모 댓글 id, 내용
-   * @return 커뮤니티 id, 유저 id, 부모 댓글 id, 내용, 생성일자, 페이지, 사이즈
-   */
+  // 댓글 목록 조회
   @Transactional(readOnly = true)
   public Map<String, Object> getCommentList(CommentGetRequest request) {
-    List<CommunityCommentVO> data = communityCommentMapper.selectComments(request);
+    List<CommunityCommentVO> comments = communityCommentMapper.selectComments(request);
 
-    List<Long> targetIds = new ArrayList<>();
-    for (CommunityCommentVO comment : data) {
-      targetIds.add(comment.getId());
-    }
-
-    String targetType = "COMMENT";
-    List<Map<String, Object>> counts = reactionMapper.selectReactionCountGroupByTarget(targetIds, targetType);
-
-    Map<Long, Long> likeMap = new HashMap<>();
-    Map<Long, Long> dislikeMap = new HashMap<>();
-
-    for (Map<String, Object> row : counts) {
-      Long targetId = ((Number) row.get("target_id")).longValue();
-      Long likeCount = ((Number) row.get("like_count")).longValue();
-      Long dislikeCount = ((Number) row.get("dislike_count")).longValue();
-      likeMap.put(targetId, likeCount);
-      dislikeMap.put(targetId, dislikeCount);
-    }
-
-    List<CommentGetResponse> comments = new ArrayList<>();
-    for (CommunityCommentVO vo : data) {
-      CommentGetResponse response = CommentGetResponse.builder()
-              .id(vo.getId())
-              .communityId(vo.getCommunityId())
-              .userId(vo.getUserId())
-              .parentId(vo.getParentId())
-              .content(vo.getContent())
-              .createdAt(vo.getCreatedAt())
-              .likeCount(likeMap.getOrDefault(vo.getId(), 0L))
-              .dislikeCount(dislikeMap.getOrDefault(vo.getId(), 0L))
-              .build();
-
-      comments.add(response);
+    if (request.getUserId() != null) {
+      for (CommunityCommentVO comment : comments) {
+        comment.setIsMine(comment.getUserId().equals(request.getUserId()));
+        comment.setMyReaction(reactionMapper.isMyReation(request.getUserId(), comment.getId(), targetType));
+      }
+    } else {
+      for (CommunityCommentVO comment : comments) {
+        comment.setIsMine(false);
+        comment.setMyReaction("DEFAULT");
+      }
     }
 
     Integer total = communityCommentMapper.countCommunityComments(request);
+
     return Map.of(
             "comments", comments,
             "total", total,
@@ -88,49 +60,21 @@ public class CommunityCommentService {
     );
   }
 
-  /**
-   * 특정 커뮤니티 댓글의 댓글 목록 조회
-   *
-   * @param request 커뮤니티 id, 유저 id, 부모 댓글 id, 내용, 페이지, 사이즈
-   * @return 커뮤니티 id, 유저 id, 부모 댓글 id, 내용, 생성일자, 페이지, 사이즈
-   */
+  // 대댓글 목록 조회
   @Transactional(readOnly = true)
   public Map<String, Object> getCommentDetailList(CommentGetRequest request) {
-    List<CommunityCommentVO> data = communityCommentMapper.selectCommentReplies(request);
+    List<CommunityCommentVO> replies = communityCommentMapper.selectCommentReplies(request);
 
-    List<Long> targetIds = new ArrayList<>();
-    for (CommunityCommentVO comment : data) {
-      targetIds.add(comment.getId());
-    }
-
-    String targetType = "COMMENT";
-    List<Map<String, Object>> counts = reactionMapper.selectReactionCountGroupByTarget(targetIds, targetType);
-
-    Map<Long, Long> likeMap = new HashMap<>();
-    Map<Long, Long> dislikeMap = new HashMap<>();
-
-    for (Map<String, Object> row : counts) {
-      Long targetId = ((Number) row.get("target_id")).longValue();
-      Long likeCount = ((Number) row.get("like_count")).longValue();
-      Long dislikeCount = ((Number) row.get("dislike_count")).longValue();
-      likeMap.put(targetId, likeCount);
-      dislikeMap.put(targetId, dislikeCount);
-    }
-
-    List<CommentGetResponse> replies = new ArrayList<>();
-    for (CommunityCommentVO vo : data) {
-      CommentGetResponse response = CommentGetResponse.builder()
-              .id(vo.getId())
-              .communityId(vo.getCommunityId())
-              .userId(vo.getUserId())
-              .parentId(vo.getParentId())
-              .content(vo.getContent())
-              .createdAt(vo.getCreatedAt())
-              .likeCount(likeMap.getOrDefault(vo.getId(), 0L))
-              .dislikeCount(dislikeMap.getOrDefault(vo.getId(), 0L))
-              .build();
-
-      replies.add(response);
+    if (request.getUserId() != null) {
+      for (CommunityCommentVO reply : replies) {
+        reply.setIsMine(reply.getUserId().equals(request.getUserId()));
+        reply.setMyReaction(reactionMapper.isMyReation(request.getUserId(), reply.getId(), targetType));
+      }
+    } else {
+      for (CommunityCommentVO reply : replies) {
+        reply.setIsMine(false);
+        reply.setMyReaction("DEFAULT");
+      }
     }
 
     Integer total = communityCommentMapper.countCommentReplies(request);
@@ -142,30 +86,30 @@ public class CommunityCommentService {
     );
   }
 
-  /**
-   * 커뮤니티 댓글 수정
-   *
-   * @param request 커뮤니티 댓글 id, 유저 id, 댓글 내용
-   */
+  // 댓글 수정
   public void updateComment(CommentUpdateRequest request) {
-    communityCommentMapper.updateComment(request);
+    if (request.getUserId() == null) {
+      throw new RuntimeException("로그인을 하셔야 댓글을 등록할 수 있습니다.");
+    }
+    if (communityCommentMapper.updateComment(request) != 1) {
+      throw new RuntimeException("작성자만이 해당 내용을 수정할 수 있습니다.");
+    }
   }
 
-  /**
-   * 커뮤니티 댓글 삭제
-   *
-   * @param request 커뮤니티 댓글 id, 유저 id
-   */
+  // 댓글 삭제
   public void deleteComment(CommentDeleteRequest request) {
-    communityCommentMapper.softDeleteComment(request);
+    if (request.getUserId() == null) {
+      throw new RuntimeException("로그인을 하셔야 댓글을 등록할 수 있습니다.");
+    }
+    if (communityCommentMapper.softDeleteComment(request) != 1) {
+      throw new RuntimeException("작성자만이 해당 내용을 수정할 수 있습니다.");
+    }
+
   }
 
-  /**
-   * 커뮤니티 댓글 반응(좋아요/싫어요) 등록
-   * @param request 커뮤니티 댓글 id, 유저 id, reactionType
-   * @return reations id
-   */
+  // 댓글에 대한 반응 등록
   public Long createCommentReaction(ReactionCreateRequest request) {
+    request.setTargetType(targetType);
     String reactionType = request.getReactionType().toUpperCase();
 
     ReactionVO existing = reactionMapper.selectReaction(request);

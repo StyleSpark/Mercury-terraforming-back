@@ -68,7 +68,7 @@ public class CommnunityController {
   }
 
   @Operation(summary = "커뮤니티 게시글 조회 수 증가", description = "커뮤니티 게시글 상세 조회시 조회수를 증가시킵니다.")
-  @PatchMapping("/{community}/views")
+  @PatchMapping("/{communityId}/views")
   public ResponseEntity<?> increaseViewCount(
           @Parameter(description = "커뮤니티 ID", example = "1") @PathVariable Long communityId) {
     service.increaseViewCount(communityId);

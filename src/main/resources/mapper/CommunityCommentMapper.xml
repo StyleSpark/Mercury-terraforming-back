@@ -23,51 +23,56 @@
     </insert>
 
     <select id="selectComments" parameterType="com.matdongsan.api.dto.community.comment.CommentGetRequest" resultType="community_comments">
-        SELECT id
-              ,community_id
-              ,user_id
-              ,parent_id
-              ,content
-              ,created_at
-         FROM community_comments
-        WHERE community_id = #{communityId}
-          AND parent_id IS NULL
-          AND deleted_at IS NULL
-        <if test="userId != null">
-          AND user_id = #{userId}
-        </if>
-        <if test="content != null and content ==''">
-          AND content LIKE CONCAT('%', #{content}, '%')
-        </if>
-     ORDER BY created_at DESC
+        SELECT c.id
+              ,c.community_id
+              ,c.user_id
+              ,u.name AS user_name
+              ,u.profile
+              ,c.parent_id
+              ,c.content
+              ,COUNT(DISTINCT cc.id) AS reply_count
+              ,COALESCE(SUM(CASE WHEN r.reaction_type = 'LIKE' THEN 1 ELSE 0 END), 0) AS like_count
+              ,COALESCE(SUM(CASE WHEN r.reaction_type = 'DISLIKE' THEN 1 ELSE 0 END), 0) AS dislike_count
+              ,c.created_at
+         FROM community_comments c
+         JOIN users u ON c.user_id = u.id
+    LEFT JOIN community_comments cc ON cc.parent_id = c.id AND cc.deleted_at IS NULL
+    LEFT JOIN reactions r ON r.target_id = c.id AND r.target_type = 'COMMENT'
+        WHERE c.community_id = #{communityId}
+          AND c.parent_id IS NULL
+          AND c.deleted_at IS NULL
+     GROUP BY c.id, c.community_id, c.user_id, u.name, u.profile, c.parent_id, c.content, c.created_at
+     ORDER BY c.created_at ASC
         LIMIT #{size}
        OFFSET #{offset}
     </select>
 
     <select id="countCommunityComments" parameterType="com.matdongsan.api.dto.community.comment.CommentGetRequest" resultType="java.lang.Integer">
         SELECT COUNT(*)
-        FROM community_comments
-        WHERE community_id = #{communityId}
-          AND deleted_at IS NULL
-        <if test="userId != null and userId ==''">
-            AND user_id = #{userId}
-        </if>
-        <if test="content != null and content ==''">
-            AND content LIKE CONCAT('%', #{content}, '%')
-        </if>
+          FROM community_comments
+         WHERE community_id = #{communityId}
+           AND deleted_at IS NULL
     </select>
 
     <select id="selectCommentReplies" parameterType="com.matdongsan.api.dto.community.comment.CommentGetRequest" resultType="community_comments">
-        SELECT id
-              ,community_id
-              ,user_id
-              ,parent_id
-              ,content
-              ,created_at
-         FROM community_comments
-        WHERE parent_id = #{parentId}
-          AND deleted_at IS NULL
-     ORDER BY created_at ASC
+        SELECT c.id
+              ,c.community_id
+              ,c.user_id
+              ,u.name AS user_name
+              ,u.profile
+              ,c.parent_id
+              ,c.content
+              ,0 AS reply_count
+              ,COALESCE(SUM(CASE WHEN r.reaction_type = 'LIKE' THEN 1 ELSE 0 END), 0) AS like_count
+              ,COALESCE(SUM(CASE WHEN r.reaction_type = 'DISLIKE' THEN 1 ELSE 0 END), 0) AS dislike_count
+              ,c.created_at
+         FROM community_comments c
+         JOIN users u ON c.user_id = u.id
+    LEFT JOIN reactions r ON r.target_id = c.id AND r.target_type = 'COMMENT'
+        WHERE c.parent_id = #{parentId}
+          AND c.deleted_at IS NULL
+     GROUP BY c.id, c.community_id, c.user_id, u.name, u.profile, c.parent_id, c.content, c.created_at
+     ORDER BY c.created_at ASC
         LIMIT #{size}
        OFFSET #{offset}
     </select>
@@ -75,7 +80,8 @@
     <select id="countCommentReplies" parameterType="com.matdongsan.api.dto.community.comment.CommentGetRequest" resultType="java.lang.Integer">
         SELECT COUNT(*)
           FROM community_comments
-         WHERE parent_id = #{parentId}
+         WHERE community_id = #{communityId}
+           AND parent_id = #{parentId}
            AND deleted_at IS NULL
     </select>
 

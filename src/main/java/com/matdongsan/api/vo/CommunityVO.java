@@ -10,20 +10,19 @@ import java.util.List;
 @Alias("community")
 public class CommunityVO {
   private Long id;
-  private Long userId;
   private Integer categoryId;
+  private Long userId;
+  private String userName;
+  private String profile;
   private String title;
   private String content;
+  private String thumbnailUrl;
   private List<String> imageUrls;
   private Integer viewCount;
-  private LocalDate createdAt;
-
-  private String userName;
   private Long likeCount;
   private Long dislikeCount;
   private Long commentCount;
-  private String thumbnailUrl;
-
   private Boolean isMine;
   private String myReaction;
+  private LocalDate createdAt;
 }
