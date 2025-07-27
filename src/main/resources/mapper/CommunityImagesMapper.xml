@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.matdongsan.api.mapper.CommunityImagesMapper">
+
+    <insert id="insertCommunityImage">
+        INSERT INTO community_images (community_id, image_url)
+        VALUES (#{communityId}, #{imageUrl})
+    </insert>
+
+    <select id="selectImageUrlsByCommunityId">
+        SELECT image_url
+          FROM community_images
+         WHERE community_id = #{communityId}
+           AND deleted_at IS NULL
+    </select>
+
+    <update id="softDeleteByUrl">
+        UPDATE community_images
+           SET deleted_at = NOW()
+         WHERE community_id = #{communityId}
+           AND image_url = #{imageUrl}
+           AND deleted_at IS NULL
+    </update>
+
+</mapper>

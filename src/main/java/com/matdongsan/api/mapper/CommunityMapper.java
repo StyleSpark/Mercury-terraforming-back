@@ -11,17 +11,23 @@ import java.util.List;
 
 @Mapper
 public interface CommunityMapper {
-  CommunityVO selectCommunityDetail(Long id);
+  int insertCommunity(CommunityCreateRequest request);
+
+  boolean updateCommunityContentAndThumbnailUrl(Long communityId, String content, String thumbnailUrl);
+
+  boolean rollbackCommunityInsert(Long communityId);
 
   List<CommunityVO> selectCommunities(CommunityGetRequest request);
 
-  Long insertCommunity(CommunityCreateRequest request);
-
-  void updateCommunity(CommunityUpdateRequest request);
-
-  void softDeleteCommunity(CommunityDeleteRequest request);
-
   Integer countCommunities(CommunityGetRequest request);
 
-  void updateCommunityViewCount(Long communityId);
+  CommunityVO selectCommunityDetail(Long id);
+
+  int updateCommunityViewCount(Long communityId);
+
+  boolean checkCommunityByUserId(Long communityId, Long loginUserId);
+
+  int updateCommunity(CommunityUpdateRequest request);
+
+  int softDeleteCommunity(CommunityDeleteRequest request);
 }

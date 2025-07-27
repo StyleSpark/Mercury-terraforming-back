@@ -3,31 +3,28 @@
 
 <mapper namespace="com.matdongsan.api.mapper.ReactionMapper">
 
-    <select id="selectReaction" parameterType="com.matdongsan.api.dto.reaction.ReactionRequest" resultType="reaction">
-        SELECT id
-               ,user_id
-               ,target_id
-               ,target_type
-               ,reaction_type
-               ,created_at
+    <select id="selectReactionCountGroupByTarget" parameterType="map" resultType="map">
+        SELECT target_id
+               ,COUNT(*) FILTER (WHERE reaction_type = 'LIKE') AS like_count
+               ,COUNT(*) FILTER (WHERE reaction_type = 'DISLIKE') AS dislike_count
           FROM reactions
-         WHERE user_id = #{userId}
-           AND target_id = #{targetId}
-           AND target_type = #{targetType}
+         WHERE target_type = #{targetType}
+           AND target_id
+            IN
+        <foreach collection="targetIds" item="id" open="(" separator="," close=")">
+               #{id}
+        </foreach>
+      GROUP BY target_id
     </select>
 
-    <update id="updateReaction" parameterType="com.matdongsan.api.dto.reaction.ReactionRequest">
-        UPDATE reactions
-           SET reaction_type = #{reactionType}
-         WHERE user_id = #{userId}
+    <select id="isMyReation" resultType="java.lang.String">
+        SELECT reaction_type
+          FROM reactions
+         WHERE user_id = #{loginUserId}
            AND target_id = #{targetId}
            AND target_type = #{targetType}
-    </update>
-
-    <insert id="insertReaction" useGeneratedKeys="true" keyProperty="id" parameterType="com.matdongsan.api.dto.reaction.ReactionRequest">
-        INSERT INTO reactions (user_id, target_id, target_type, reaction_type)
-        VALUES (#{userId}, #{targetId}, #{targetType}, #{reactionType})
-    </insert>
+         LIMIT 1
+    </select>
 
     <select id="selectReactionLikeCount" parameterType="map" resultType="java.lang.Long">
         SELECT COUNT(*)
@@ -45,18 +42,30 @@
            AND reaction_type = 'DISLIKE'
     </select>
 
-    <select id="selectReactionCountGroupByTarget" parameterType="map" resultType="map">
-        SELECT target_id
-               ,COUNT(*) FILTER (WHERE reaction_type = 'LIKE') AS like_count
-               ,COUNT(*) FILTER (WHERE reaction_type = 'DISLIKE') AS dislike_count
+    <select id="selectReaction" parameterType="com.matdongsan.api.dto.reaction.ReactionCreateRequest" resultType="reaction">
+        SELECT id
+               ,user_id
+               ,target_id
+               ,target_type
+               ,reaction_type
+               ,created_at
           FROM reactions
-         WHERE target_type = #{targetType}
-           AND target_id
-            IN
-        <foreach collection="targetIds" item="id" open="(" separator="," close=")">
-               #{id}
-        </foreach>
-      GROUP BY target_id
+         WHERE user_id = #{userId}
+           AND target_id = #{targetId}
+           AND target_type = #{targetType}
     </select>
+
+    <update id="updateReaction" parameterType="com.matdongsan.api.dto.reaction.ReactionCreateRequest">
+        UPDATE reactions
+           SET reaction_type = #{reactionType}
+         WHERE user_id = #{userId}
+           AND target_id = #{targetId}
+           AND target_type = #{targetType}
+    </update>
+
+    <insert id="insertReaction" useGeneratedKeys="true" keyProperty="id" parameterType="com.matdongsan.api.dto.reaction.ReactionCreateRequest">
+        INSERT INTO reactions (user_id, target_id, target_type, reaction_type)
+        VALUES (#{userId}, #{targetId}, #{targetType}, #{reactionType})
+    </insert>
 
 </mapper>

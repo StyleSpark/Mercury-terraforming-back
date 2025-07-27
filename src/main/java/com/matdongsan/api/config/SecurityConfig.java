@@ -37,6 +37,9 @@ public class SecurityConfig {
                             "/api/auth/**"
                     ).permitAll()
 
+                    //  커뮤니티 조회수 증가 API는 누구나 접근 가능
+                    .requestMatchers(HttpMethod.PATCH, "/api/communities/*/views").permitAll()
+
                     // GET 요청 중에서 admin, user는 인증 필요
                     .requestMatchers(HttpMethod.GET, "/api/admin/**", "/api/user/**").authenticated()
 

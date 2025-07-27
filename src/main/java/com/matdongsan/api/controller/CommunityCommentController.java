@@ -5,11 +5,17 @@ import com.matdongsan.api.dto.community.comment.CommentCreateRequest;
 import com.matdongsan.api.dto.community.comment.CommentDeleteRequest;
 import com.matdongsan.api.dto.community.comment.CommentGetRequest;
 import com.matdongsan.api.dto.community.comment.CommentUpdateRequest;
-import com.matdongsan.api.dto.reaction.ReactionRequest;
+import com.matdongsan.api.dto.reaction.ReactionCreateRequest;
+import com.matdongsan.api.security.UserRole;
 import com.matdongsan.api.service.CommunityCommentService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -17,99 +23,111 @@ import java.util.Map;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
+@Tag(name = "커뮤니티 댓글 API", description = "커뮤니티 게시글의 댓글 등록/조회/수정/삭제 API")
 public class CommunityCommentController {
 
   private final CommunityCommentService service;
 
-  // TODO: 로그인 사용자 인증 구현 필요 (임시로 요청 DTO의 userId를 사용)
-
-  /**
-   * 커뮤니티 댓글/대댓글 등록
-   * @param communityId 커뮤니티 id
-   * @param request 사용자 id(임시), 댓글 부모 id, 댓글 내용
-   * @return 댓글 고유 id
-   */
+  @Operation(
+          summary = "게시글 댓글/대댓글 등록",
+          description = "커뮤니티 게시글을 등록합니다. JWT 인증 필요",
+          security = @SecurityRequirement(name = "JWT")
+  )
   @PostMapping("/communities/{communityId}/comments")
   public ResponseEntity<?> createComment(
-          @PathVariable Long communityId,
-          @RequestBody CommentCreateRequest request) {
+          @Parameter(description = "커뮤니티 ID", example = "1") @PathVariable Long communityId,
+          @RequestBody CommentCreateRequest request,
+          @Parameter(hidden = true) @AuthenticationPrincipal UserRole user) {
+
     request.setCommunityId(communityId);
+    request.setUserId(user.getId());
     Long id = service.createComment(request);
     return ResponseEntity.ok(ApiResponse.success(201, id));
   }
 
-  /**
-   * 특정 커뮤니티 댓글 목록 조회 (오프셋 방식으로 진행)
-   * @param communityId 커뮤니티 id
-   * @param request 커뮤니티 id, 유저 id, 부모 댓글 id, 내용, 페이지, 사이즈
-   * @return 커뮤니티 id, 유저 id, 부모 댓글 id, 내용, 생성일자, 페이지, 사이즈
-   */
+  @Operation(
+          summary = "게시글 댓글 목록 조회",
+          description = "댓글 목록을 페이지네이션 형식으로 조회합니다."
+  )
   @GetMapping("/communities/{communityId}/comments")
   public ResponseEntity<?> getCommentList(
-          @PathVariable Long communityId,
-          CommentGetRequest request) {
+          @Parameter(description = "커뮤니티 ID", example = "1") @PathVariable Long communityId,
+          @ModelAttribute CommentGetRequest request,
+          @Parameter(hidden = true) @AuthenticationPrincipal UserRole user) {
+
     request.setCommunityId(communityId);
+    if (user != null) {
+      request.setUserId(user.getId());
+    }
     Map<String, Object> response = service.getCommentList(request);
     return ResponseEntity.ok(ApiResponse.success(response));
   }
 
-  /**
-   * 특정 커뮤니티 댓글에 대한 댓글 목록 조회 // TODO: 페이지네이션 커서 방식 기본 5개씩 답글 보여주는 형식으로 생각 중
-   * @param commentId 커뮤니티 id
-   * @param request 커뮤니티 id, 유저 id, 부모 댓글 id, 내용, 페이지, 사이즈
-   * @return 커뮤니티 id, 유저 id, 부모 댓글 id, 내용, 생성일자, 페이지, 사이즈
-   */
+  @Operation(
+          summary = "게시글 대댓글 목록 조회",
+          description = "대댓글 목록을 페이지네이션 형식으로 조회합니다."
+  )
   @GetMapping("/comments/{commentId}/replies")
   public ResponseEntity<?> getCommentDetailList(
-          @PathVariable Long commentId,
-          CommentGetRequest request) {
+          @Parameter(description = "댓글 ID", example = "1") @PathVariable Long commentId,
+          @ModelAttribute CommentGetRequest request,
+          @Parameter(hidden = true) @AuthenticationPrincipal UserRole user) {
+
     request.setParentId(commentId);
+    if (user != null) {
+      request.setUserId(user.getId());
+    }
     Map<String, Object> response = service.getCommentDetailList(request);
     return ResponseEntity.ok(ApiResponse.success(response));
   }
 
-  /**
-   * 커뮤니티의 댓글/대댓글 수정
-   * @param commentId 댓글 id
-   * @param request 댓글 id, 유저 id, 댓글 내용
-   * @return 수정 결과
-   */
+  @Operation(
+          summary = "게시글 댓글/대댓글 수정",
+          description = "커뮤니티 게시글에 대한 댓글/대댓글을 수정합니다. JWT 인증 필요",
+          security = @SecurityRequirement(name = "JWT")
+  )
   @PatchMapping("/comments/{commentId}")
   public ResponseEntity<?> updateComment(
-          @PathVariable Long commentId,
-          @RequestBody CommentUpdateRequest request) {
+          @Parameter(description = "댓글 ID", example = "1") @PathVariable Long commentId,
+          @RequestBody CommentUpdateRequest request,
+          @Parameter(hidden = true) @AuthenticationPrincipal UserRole user) {
+
     request.setId(commentId);
+    request.setUserId(user.getId());
     service.updateComment(request);
     return ResponseEntity.ok(ApiResponse.success("댓글이 수정되었습니다."));
   }
 
-  /**
-   * 커뮤니티의 댓글/대댓글 삭제
-   * @param commentId 댓글 id
-   * @param request 댓글 id, 유저 id, 댓글 내용
-   * @return 삭제 결과
-   */
+  @Operation(
+          summary = "게시글 댓글/대댓글 삭제 (소프트)",
+          description = "커뮤니티 게시글에 대한 댓글/대댓글을 비활성화 처리하여 삭제합니다. JWT 인증 필요",
+          security = @SecurityRequirement(name = "JWT")
+  )
   @DeleteMapping("/comments/{commentId}")
   public ResponseEntity<?> deleteComment(
-          @PathVariable Long commentId,
-          @RequestBody CommentDeleteRequest request) {
+          @Parameter(description = "댓글 ID", example = "1") @PathVariable Long commentId,
+          @Parameter(hidden = true) @AuthenticationPrincipal UserRole user) {
+
+    CommentDeleteRequest request = new CommentDeleteRequest();
     request.setId(commentId);
+    request.setUserId(user.getId());
     service.deleteComment(request);
     return ResponseEntity.ok(ApiResponse.success("댓글이 삭제되었습니다."));
   }
 
-  /**
-   * 커뮤니티 댓글 반응(좋아요/싫어요) 등록
-   * @param commentId 커뮤니티 댓글 id
-   * @param request 유저 id, reactionType
-   * @return reations id
-   */
+  @Operation(
+          summary = "커뮤니티 게시글의 댓글/대댓글에 대한 반응 등록 (좋아요/싫어요)",
+          description = "댓글/대댓글에 대한 반응을 등록 합니다. JWT 인증 필요",
+          security = @SecurityRequirement(name = "JWT")
+  )
   @PostMapping("/comments/{commentId}/reactions")
   public ResponseEntity<?> createCommentReaction(
-          @PathVariable Long commentId,
-          @RequestBody ReactionRequest request) {
+          @Parameter(description = "댓글 ID", example = "1") @PathVariable Long commentId,
+          @RequestBody ReactionCreateRequest request,
+          @Parameter(hidden = true) @AuthenticationPrincipal UserRole user) {
+
     request.setTargetId(commentId);
-    request.setTargetType("COMMENT");
+    request.setUserId(user.getId());
     Long reactionId = service.createCommentReaction(request);
     return ResponseEntity
             .status(HttpStatus.CREATED)
