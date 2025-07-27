@@ -20,7 +20,10 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 20MB
-
+  data:
+    redis:
+      host: localhost       # Redis 서버 주소 (로컬 개발환경용)
+      port: 6379            # 기본 포트
 vworld:
   api:
     key: ${secret.vworld.api-key}

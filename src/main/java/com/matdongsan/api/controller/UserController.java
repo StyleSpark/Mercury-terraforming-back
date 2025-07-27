@@ -35,48 +35,19 @@ public class UserController {
   private final JwtUtil jwtUtil;
   private final AgentService agentService;
   private final ReportService reportService;
-
-  @Operation(summary = "소셜 로그인(구글)", description = "Google OAuth2 토큰을 기반으로 로그인 처리합니다.")
-  @PostMapping("/social-login")
-  public ResponseEntity<?> socialLogin(@RequestBody SocialLoginDto request) {
-    UserVO user = service.handleSocialLogin(request.getProvider(), request.getToken());
-    String jwt = jwtUtil.generateToken(user.getId(), user.getEmail(), user.getRole());
-    return ResponseEntity.ok(Map.of(
-            "accessToken", jwt,
-            "user", Map.of(
-                    "id", user.getId(),
-                    "email", user.getEmail(),
-                    "name", user.getName(),
-                    "role", user.getRole(),
-                    "provider", user.getProvider()
-            )
-    ));
-  }
-
-  @Operation(summary = "회원가입", description = "일반 사용자가 회원가입을 진행합니다.")
-  @PostMapping("/signup")
-  public ResponseEntity<?> signup(@RequestBody UserSignupDto request) {
-    UserVO createdUser = service.signup(request);
-    String jwt = jwtUtil.generateToken(createdUser.getId(), createdUser.getEmail(), createdUser.getRole());
-    return ResponseEntity.ok(Map.of(
-            "accessToken", jwt,
-            "user", Map.of(
-                    "id", createdUser.getId(),
-                    "email", createdUser.getEmail(),
-                    "name", createdUser.getName(),
-                    "role", createdUser.getRole()
-            )
-    ));
-  }
-
-  @Operation(summary = "이메일 로그인", description = "이메일과 비밀번호로 로그인합니다.")
   @PostMapping("/login")
   public ResponseEntity<?> login(@RequestBody UserLoginDto request) {
     UserVO user = service.login(request.getEmail(), request.getPassword());
-    String jwt = jwtUtil.generateToken(user.getId(), user.getEmail(), user.getRole());
+
+    String accessToken = jwtUtil.generateAccessToken(user.getId(), user.getEmail(), user.getRole());
+    String refreshToken = jwtUtil.generateRefreshToken(user.getId(), user.getEmail(), user.getRole());
+
+    // DB에 리프레시 토큰 저장
+    service.updateRefreshToken(user.getId(), refreshToken);
 
     return ResponseEntity.ok(Map.of(
-            "accessToken", jwt,
+            "accessToken", accessToken,
+            "refreshToken", refreshToken,
             "user", Map.of(
                     "id", user.getId(),
                     "email", user.getEmail(),
@@ -86,12 +57,47 @@ public class UserController {
     ));
   }
 
-  @Operation(summary = "닉네임 중복 체크", description = "입력한 닉네임이 중복되는지 여부를 확인합니다.")
-  @PostMapping("/nickname-check")
-  public ResponseEntity<?> checkNickname(@RequestBody Map<String, String> request) {
-    String nickname = request.get("nickname");
-    boolean exists = service.existsByNickname(nickname);
-    return ResponseEntity.ok(Map.of("available", !exists));
+  @PostMapping("/signup")
+  public ResponseEntity<?> signup(@RequestBody UserSignupDto request) {
+    UserVO createdUser = service.signup(request);
+
+    String accessToken = jwtUtil.generateAccessToken(createdUser.getId(), createdUser.getEmail(), createdUser.getRole());
+    String refreshToken = jwtUtil.generateRefreshToken(createdUser.getId(), createdUser.getEmail(), createdUser.getRole());
+
+    service.updateRefreshToken(createdUser.getId(), refreshToken);
+
+    return ResponseEntity.ok(Map.of(
+            "accessToken", accessToken,
+            "refreshToken", refreshToken,
+            "user", Map.of(
+                    "id", createdUser.getId(),
+                    "email", createdUser.getEmail(),
+                    "name", createdUser.getName(),
+                    "role", createdUser.getRole()
+            )
+    ));
+  }
+
+  @PostMapping("/social-login")
+  public ResponseEntity<?> socialLogin(@RequestBody SocialLoginDto request) {
+    UserVO user = service.handleSocialLogin(request.getProvider(), request.getToken());
+
+    String accessToken = jwtUtil.generateAccessToken(user.getId(), user.getEmail(), user.getRole());
+    String refreshToken = jwtUtil.generateRefreshToken(user.getId(), user.getEmail(), user.getRole());
+
+    service.updateRefreshToken(user.getId(), refreshToken);
+
+    return ResponseEntity.ok(Map.of(
+            "accessToken", accessToken,
+            "refreshToken", refreshToken,
+            "user", Map.of(
+                    "id", user.getId(),
+                    "email", user.getEmail(),
+                    "name", user.getName(),
+                    "role", user.getRole(),
+                    "provider", user.getProvider()
+            )
+    ));
   }
 
   @Operation(
@@ -105,6 +111,7 @@ public class UserController {
     UserVO response = service.getUserDataByUserId(user);
     return ResponseEntity.ok(ApiResponse.success(response));
   }
+
 
   @Operation(
           summary = "내 정보 수정",
@@ -135,4 +142,5 @@ public class UserController {
     List<PropertyVO> response = service.getPropertiesByUser(user.getId());
     return ResponseEntity.ok(ApiResponse.success(response));
   }
+
 }

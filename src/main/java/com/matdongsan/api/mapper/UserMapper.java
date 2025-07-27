@@ -29,4 +29,6 @@ public interface UserMapper {
   int updateUserProfile(UpdateUserDto request);
 
   boolean checkNotAgent(Long userId);
+
+  void updateRefreshToken(Long id, String refreshToken);
 }

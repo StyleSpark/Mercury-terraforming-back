@@ -36,7 +36,7 @@ public class SocialAuthService {
   private final PasswordEncoder passwordEncoder;
 
   private final S3Service s3Service;
-
+  private final RefreshTokenService refreshTokenService;
   private final ImageConversionService imageConversionService;
 
   @Value("${security.google.client-id}")
@@ -155,5 +155,14 @@ public class SocialAuthService {
 
   public List<PropertyVO> getPropertiesByUser(Long id) {
     return propertyMapper.selectUserProperties(id);
+  }
+
+  public void updateRefreshToken(Long id, String refreshToken) {
+    // 기존 DB 저장 로직이 필요하다면 유지
+    mapper.updateRefreshToken(id, refreshToken);
+
+    // Redis 저장 추가 + TTL 적용
+    long refreshTokenValidity = jwtUtil.getRefreshTokenValidity();
+    refreshTokenService.saveRefreshToken(id, refreshToken, refreshTokenValidity);
   }
 }

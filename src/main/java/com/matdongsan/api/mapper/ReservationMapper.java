@@ -22,4 +22,8 @@ public interface ReservationMapper {
   boolean existsCompletedReservation(AgentReviewCreateRequest request);
 
   boolean existsReservation(AgentReportCreateRequest request);
+
+  List<ReservationVO> selectReservationsByAgentId(Long agentId);
+
+  ReservationVO findLastReservationByProperty(Long propertyId);
 }

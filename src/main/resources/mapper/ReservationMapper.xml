@@ -41,4 +41,40 @@
         )
     </select>
 
+    <select id="selectReservationsByAgentId"
+            parameterType="long"
+            resultType="com.matdongsan.api.vo.ReservationVO">
+        SELECT
+        r.id,
+        r.property_id,
+        r.user_id,
+        u.name AS user_name,
+        u.profile AS user_profile,
+        r.reserved_time,
+        r.created_at
+        FROM reservations r
+        JOIN properties p ON r.property_id = p.id
+        JOIN users u ON r.user_id = u.id
+        WHERE p.agent_id = #{agentId}
+        ORDER BY r.created_at DESC
+    </select>
+
+    <select id="findLastReservationByProperty"
+            parameterType="long"
+            resultType="com.matdongsan.api.vo.ReservationVO">
+        SELECT
+        r.id,
+        r.property_id,
+        r.user_id,
+        u.name AS user_name,
+        u.profile AS user_profile,
+        r.reserved_time,
+        r.created_at
+        FROM reservations r
+        JOIN users u ON r.user_id = u.id
+        WHERE r.property_id = #{propertyId}
+        ORDER BY r.created_at DESC
+        LIMIT 1
+    </select>
+
 </mapper>

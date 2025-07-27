@@ -32,7 +32,7 @@ public class AgentService {
   private final ReservationMapper reservationMapper;
   private final AgentReviewMapper agentReviewMapper;
   private final S3Service s3Service;
-
+  private final OpenSearchService openSearchService;
   /**
    * 중개인 단일 조회
    *
@@ -98,7 +98,35 @@ public class AgentService {
     result += agentMapper.insertAgent(request);
     result += userMapper.updateAgentStatus(request.getUserId());
 
-    // 트랜잭션이 성공(commit)된 경우에만 업로드
+    // 색인 (트랜잭션이 성공(commit)된 경우에만)
+    TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+      @Override
+      public void afterCommit() {
+        try {
+          AgentVO agentVO = agentMapper.selectAgentDetail(request.getUserId());
+          Map<String, Object> doc = Map.ofEntries(
+                  Map.entry("id", agentVO.getId()),
+                  Map.entry("userId", agentVO.getUserId()),
+                  Map.entry("agentName", agentVO.getAgentName()),
+                  Map.entry("brand", agentVO.getBrand()),
+                  Map.entry("address", agentVO.getAddress()),
+                  Map.entry("addressDetail", agentVO.getAddressDetail()),
+                  Map.entry("latitude", agentVO.getLatitude()),
+                  Map.entry("longitude", agentVO.getLongitude()),
+                  Map.entry("profileUrl", agentVO.getProfileUrl()),
+                  Map.entry("createdAt", agentVO.getCreatedAt()),
+                  Map.entry("licenseNumber", agentVO.getLicenseNumber()),
+                  Map.entry("reviewAvg", agentVO.getReviewAvg()),
+                  Map.entry("reviewCount", agentVO.getReviewCount())
+          );
+          openSearchService.indexAgent(doc);
+        } catch (Exception e) {
+          log.error("OpenSearch 색인 실패: {}", request.getUserId(), e);
+        }
+      }
+    });
+
+    // S3 업로드 (트랜잭션이 성공(commit)된 경우에만)
     if (imageKey != null) {
       String finalKey = imageKey;
       byte[] fileBytes = imageFile.getBytes();

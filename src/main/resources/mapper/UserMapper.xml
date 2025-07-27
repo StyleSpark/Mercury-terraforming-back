@@ -127,5 +127,9 @@
           AND deleted_at IS NOT NULL
     </update>
 
-
+    <update id="updateRefreshToken">
+        UPDATE users
+        SET refresh_token = #{refreshToken}, updated_at = NOW()
+        WHERE id = #{id}
+    </update>
 </mapper>

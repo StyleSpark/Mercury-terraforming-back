@@ -44,6 +44,17 @@ dependencies {
 	implementation "com.sksamuel.scrimage:scrimage-webp:4.0.32"
 	//jsoup
 	implementation 'org.jsoup:jsoup:1.21.1'
+	//redis
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	//redis 디버깅체크용
+	implementation 'com.fasterxml.jackson.core:jackson-databind'
+	// Spring Data OpenSearch - 자동 설정 활성화
+	implementation 'org.opensearch.client:spring-data-opensearch-starter:1.8.1'
+
+	// OpenSearch Java Client - RestClient 기반 transport
+	implementation 'org.opensearch.client:opensearch-java:2.25.0'
+	implementation 'org.apache.httpcomponents.client5:httpclient5:5.2.1'
+
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'

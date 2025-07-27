@@ -17,6 +17,7 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -33,6 +34,7 @@ public class PropertyService {
   private final S3Service s3Service;
   private final ImageConversionService imageConversionService;
   private final AsyncImageUploader asyncImageUploader;
+  private final OpenSearchService openSearchService;
 
   public Long createProperty(PropertyCreateRequest request) {
     consumeTicket(request.getUserId());
@@ -40,8 +42,19 @@ public class PropertyService {
     insertPropertyAndDetails(request);
     uploadAndSaveImages(request);
     handleTags(request.getTags(), request.getId());
+
+    PropertyVO propertyVO = getFullProperty(request.getId());
+    List<String> tags = propertyVO.getTags().stream().map(Tag::getName).toList();
+    try {
+      openSearchService.indexPropertyWithTags(propertyVO, tags);
+    } catch (IOException e) {
+      // 색인 실패 로그만 남기고 서비스는 계속 진행
+      log.error("OpenSearch 색인 실패: propertyId={}", propertyVO.getId(), e);
+    }
+
     return request.getId();
   }
+
 
   public PropertyVO updateProperty(PropertyUpdateRequest request) {
     validatePropertyOwnership(request);

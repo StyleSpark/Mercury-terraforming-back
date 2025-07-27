@@ -35,4 +35,6 @@ public interface AgentMapper {
   List<AgentGetResponse> selectAgentListWithinBounds(AgentGetRequest request);
 
   int countAgentListWithinBounds(AgentGetRequest request);
+
+  Long findAgentIdByPropertyId(Long propertyId);
 }

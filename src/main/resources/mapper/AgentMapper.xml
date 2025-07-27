@@ -273,4 +273,14 @@
         AND deleted_at IS NULL
         )
     </select>
+
+    <select id="findAgentIdByPropertyId" parameterType="long" resultType="long">
+        SELECT a.id
+        FROM agents a
+        JOIN users u ON a.user_id = u.id
+        JOIN properties p ON p.user_id = u.id
+        WHERE p.id = #{propertyId}
+        AND a.deleted_at IS NULL
+        AND u.deleted_at IS NULL
+    </select>
 </mapper>

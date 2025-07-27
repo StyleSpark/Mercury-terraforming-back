@@ -64,4 +64,10 @@ public class ReservationController {
   }
 
   // TODO: 예약 상세조회, 수정, 취소 기능 추가 예정
+  @Operation(summary = "매물 등록자 알림 조회", description = "등록자가 본인의 새 알림을 조회합니다.")
+  @GetMapping("/notifications")
+  public ResponseEntity<?> getNotifications(@RequestParam Long agentId) {
+    List<ReservationVO> notifications = service.getNotifications(agentId);
+    return ResponseEntity.ok(ApiResponse.success(notifications));
+  }
 }
